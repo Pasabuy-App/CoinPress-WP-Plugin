@@ -1,4 +1,4 @@
-# TripleCoin - WordPress Plugin
+# CoinPress - WordPress Plugin
 
 In this project, we will try to make our own cryptocurrency yet centralized. That's it for now and Good Luck!
 
