@@ -3,7 +3,7 @@
     /*
         Plugin Name: CoinPress WP Plugin
         Plugin URI: http://www.bytescrafter.net/projects/coinpress
-        Description: Plugin for user Feeds, Activity, Messages, and Many more.
+        Description: Plugin for WordPress currency using blockchain technology.
         Version: 0.1.0
         Author: Bytes Crafter
         Author URI:   https://www.bytescrafter.net/about-us
