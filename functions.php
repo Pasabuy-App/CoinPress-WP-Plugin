@@ -28,6 +28,9 @@
     }
     #endregion
 
+    define("CP_PLUGIN_PATH", plugin_dir_path( __FILE__ ) );
+    define("CP_PLUGIN_URL", plugin_dir_url( __FILE__ ) );
+
     //Important config files and plugin updates.
     include_once ( plugin_dir_path( __FILE__ ) . '/includes/core/config.php' );
     include_once ( plugin_dir_path( __FILE__ ) . '/includes/core/update.php' );
