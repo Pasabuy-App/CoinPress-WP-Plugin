@@ -15,4 +15,11 @@
 	//Defining Global Variables
 	define('CP_PREFIX', 'cp_');
 
+	define('CP_CONFIGS', CP_PREFIX.'configs');
+	define('CP_CURRENCIES', CP_PREFIX.'currencies');
+	define('CP_REVS', CP_PREFIX.'revisions');
+	define('CP_WALLETS', CP_PREFIX.'wallets');
+	define('CP_WALLETS_LOG', CP_PREFIX.'wallets_log');
+
+
 ?>
