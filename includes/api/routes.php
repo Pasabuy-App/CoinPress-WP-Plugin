@@ -18,6 +18,7 @@
 
     // user/ wallet folder
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-create-wallet.php'; // Example
+    require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-send-money.php'; // Example
 
 
     // global 
@@ -33,11 +34,11 @@
                 'callback' => array('CP_Authenticate','listen'),
             ));     
         /*
-         *  LOCATION RESTAPI
+         *  WALLET RESTAPI
         */
-            register_rest_route( 'coinpress/v1/user/wallet', 'create', array(
+            register_rest_route( 'coinpress/v1/user/wallet', 'send', array(
                 'methods' => 'POST',
-                'callback' => array('CP_Create_User_Wallet','listen'),
+                'callback' => array('CP_User_Send_Money','listen'),
             ));
 
     }
