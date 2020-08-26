@@ -20,11 +20,10 @@
 		$tbl_confg = CP_CONFIGS;
 		$tbl_revs = CP_REVS;
 		$tbl_wallet = CP_WALLETS;
-		$tbl_wallet_log = CP_WALLETS_LOG;
+		$tbl_transac = CP_TRANSACTION;
 		$tbl_currencies = CP_CURRENCIES;
 
       
-		$wpdb->query("START TRANSACTION");
 
 	
 		//Database table creation for configs
@@ -48,15 +47,14 @@
 				$sql .= " `curhash` varchar(255) NOT NULL COMMENT 'Last Transaction hash', ";
 				$sql .= " `public_key` varchar(255) NOT NULL COMMENT 'Hash ID of this Wallet', ";
 				$sql .= " `date_created` datetime DEFAULT current_timestamp() COMMENT 'Date wallet was created', ";
-				$sql .= "PRIMARY KEY (`ID`), ";
-				$sql .= "  UNIQUE KEY `wpid` (`wpid`) ";
+				$sql .= "PRIMARY KEY (`ID`) ";
 				$sql .= ") ENGINE = InnoDB AUTO_INCREMENT=3 ; ";
 			$result = $wpdb->get_results($sql);
 		}
 
 		//Database table creation for wallet log
-		if($wpdb->get_var( "SHOW TABLES LIKE '$tbl_wallet_log'" ) != $tbl_wallet_log) {
-			$sql = "CREATE TABLE `".$tbl_wallet_log."` (";
+		if($wpdb->get_var( "SHOW TABLES LIKE '$tbl_transac'" ) != $tbl_transac) {
+			$sql = "CREATE TABLE `".$tbl_transac."` (";
 				$sql .= "  `ID` bigint(20) NOT NULL AUTO_INCREMENT, ";
 				$sql .= "  `sender` bigint(20) NOT NULL, ";
 				$sql .= "  `recipient` bigint(20) NOT NULL, ";
@@ -106,27 +104,25 @@
 		}
 		
 		if ($verify == true) {
-			$wpdb->query(" INSERT INTO cp_currencies  (title, info, abbrev, exchange, created_by) VALUES ( 'Control', 'Origin', 'CTR', '1', '1' );
+			$wpdb->query(" INSERT INTO cp_currencies  (ID, title, info, abbrev, exchange, created_by) VALUES (1, 'Control', 'Origin', 'CTR', '1', '1' );
 			");
 
-			$wpdb->query("  INSERT INTO cp_wallets (wpid, currency) VALUES  ( 1, 1 )");
-			$last_insert_id = $wpdb->insert_id;
+			$wpdb->query("  INSERT INTO cp_wallets (ID, wpid, currency) VALUES  (1, 1, 1 )");
 
 			$wpdb->query("UPDATE $tbl_wallet SET public_key = concat(
-				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand($last_insert_id)*4294967296))*36+1, $last_insert_id),
-				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, $last_insert_id),
-				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, $last_insert_id),
-				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, $last_insert_id),
-				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, $last_insert_id),
-				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, $last_insert_id),
-				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, $last_insert_id),
-				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, $last_insert_id),
-				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed)*36+1, $last_insert_id)
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(1)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed)*36+1, 1)
 			  )
-			  WHERE ID = $last_insert_id;");
+			  WHERE ID = 1;");
 		}
 
-		$wpdb->query("COMMIT");
 	}
 
 	add_action( 'activated_plugin', 'cp_dbhook_activate');

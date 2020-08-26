@@ -23,8 +23,8 @@
 	define('CP_WALLETS_FIELDS', '( `wpid`, `currency`, `curhash`, `public_key`, `date_created` )');
 
 
-	define('CP_WALLETS_LOG', CP_PREFIX.'wallets_log');
-	define('CP_WALLETS_LOG_FIELDS', '(`sender`, `recipient`, `amount`, `prevhash`, `curhash`, `date_created` )');
+	define('CP_TRANSACTION', CP_PREFIX.'transaction');
+	define('CP_TRANSACTION_FIELDS', '(`sender`, `recipient`, `amount`, `prevhash`, `curhash`, `date_created` )');
 
 
 ?>
