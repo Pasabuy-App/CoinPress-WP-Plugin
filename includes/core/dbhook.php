@@ -22,17 +22,15 @@
 		$tbl_wallet = CP_WALLETS;
 		$tbl_transac = CP_TRANSACTION;
 		$tbl_currencies = CP_CURRENCIES;
-
-      
-
 	
 		//Database table creation for configs
 		if($wpdb->get_var( "SHOW TABLES LIKE '$tbl_confg'" ) != $tbl_confg) {
 			$sql = "CREATE TABLE `".$tbl_confg."` (";
-				$sql .= "`ID` bigint(20) NOT NULL AUTO_INCREMENT, ";
-				$sql .= "`config_desc` varchar(255) NOT NULL COMMENT 'Config Description', ";
-				$sql .= "`config_key` varchar(50) NOT NULL COMMENT 'Config KEY',, ";
-				$sql .= "`config_value` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Config VALUES', ";
+				$sql .= " `ID` bigint(20) NOT NULL AUTO_INCREMENT, ";
+				$sql .= " `hash_id` varchar(255) NOT NULL COMMENT 'Config Description', ";
+				$sql .= " `config_desc` varchar(255) NOT NULL COMMENT 'Config Description', ";
+				$sql .= " `config_key` varchar(50) NOT NULL COMMENT 'Config KEY', ";
+				$sql .= " `config_value` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Config VALUES', ";
 				$sql .= "PRIMARY KEY (`ID`) ";
 				$sql .= ") ENGINE = InnoDB; ";
 			$result = $wpdb->get_results($sql);
@@ -42,6 +40,7 @@
 		if($wpdb->get_var( "SHOW TABLES LIKE '$tbl_wallet'" ) != $tbl_wallet) {
 			$sql = "CREATE TABLE `".$tbl_wallet."` (";
 				$sql .= "`ID` bigint(20) NOT NULL AUTO_INCREMENT, ";
+				$sql .= " `hash_id` varchar(255) NOT NULL COMMENT 'Config Description', ";
 				$sql .= " `wpid` bigint(20) NOT NULL COMMENT 'User ID of Wallet owner', ";
 				$sql .= " `currency` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Currency ID', ";
 				$sql .= " `curhash` varchar(255) NOT NULL COMMENT 'Last Transaction hash', ";
@@ -56,12 +55,13 @@
 		if($wpdb->get_var( "SHOW TABLES LIKE '$tbl_transac'" ) != $tbl_transac) {
 			$sql = "CREATE TABLE `".$tbl_transac."` (";
 				$sql .= "  `ID` bigint(20) NOT NULL AUTO_INCREMENT, ";
+				$sql .= "  `hash_id` varchar(255) NOT NULL COMMENT 'Config Description', ";
 				$sql .= "  `sender` bigint(20) NOT NULL, ";
 				$sql .= "  `recipient` bigint(20) NOT NULL, ";
 				$sql .= "  `amount` decimal(20,2) NOT NULL, ";
 				$sql .= "  `prevhash` varchar(255) NOT NULL, ";
 				$sql .= "  `curhash` varchar(255) NOT NULL, ";
-				$sql .= "  `date_created` datetime DEFAULT NULL, ";
+				$sql .= "  `date_created` datetime DEFAULT current_timestamp(), ";
 				$sql .= "PRIMARY KEY (`ID`) ";
 				$sql .= ") ENGINE = InnoDB AUTO_INCREMENT=4; ";
 			$result = $wpdb->get_results($sql);
@@ -71,6 +71,7 @@
 		if($wpdb->get_var( "SHOW TABLES LIKE '$tbl_currencies'" ) != $tbl_currencies) {
 			$sql = "CREATE TABLE `".$tbl_currencies."` (";
 				$sql .= "  `ID` bigint(20) NOT NULL AUTO_INCREMENT, ";
+				$sql .= "  `hash_id` varchar(255) NOT NULL COMMENT 'Config Description', ";
 				$sql .= "  `title` varchar(50) NOT NULL COMMENT 'Name of Currency', ";
 				$sql .= "  `info` varchar(255) NOT NULL COMMENT 'Description', ";
 				$sql .= "  `abbrev` varchar(3) NOT NULL DEFAULT 'CPC' COMMENT 'Abbreviation', ";
@@ -86,12 +87,13 @@
 		if($wpdb->get_var( "SHOW TABLES LIKE '$tbl_revs'" ) != $tbl_revs) {
 			$sql = "CREATE TABLE `".$tbl_revs."` (";
 				$sql .= "`ID` bigint(20) NOT NULL AUTO_INCREMENT, ";
+				$sql .= "`hash_id` varchar(255) NOT NULL COMMENT 'Config Description', ";
 				$sql .= "`revs_type` enum('none','configs','currencies') NOT NULL COMMENT 'Target table', ";
 				$sql .= "`parent_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Parent ID of this Revision', ";
 				$sql .= "`child_key` varchar(50) NOT NULL COMMENT 'Column name on the table', ";
 				$sql .= "`child_val` longtext NOT NULL COMMENT 'Text Value of the row Key.', ";
 				$sql .= "`created_by` bigint(20) NOT NULL DEFAULT 0 COMMENT 'User ID created this Revision.', ";
-				$sql .= "`date_created` datetime DEFAULT NULL COMMENT 'The date this Revision is created.', ";
+				$sql .= "`date_created` datetime DEFAULT current_timestamp() COMMENT 'The date this Revision is created.', ";
 				$sql .= "PRIMARY KEY (`ID`) ";
 				$sql .= ") ENGINE = InnoDB; ";
 			$result = $wpdb->get_results($sql);

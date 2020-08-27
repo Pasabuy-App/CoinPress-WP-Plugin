@@ -16,7 +16,11 @@
 	define('CP_PREFIX', 'cp_');
 
 	define('CP_CONFIGS', CP_PREFIX.'configs');
+
 	define('CP_CURRENCIES', CP_PREFIX.'currencies');
+	define('CP_CURRENCIES_FIELDS', '(`title`, `info`, `abbrev`, `exchange`, `created_by`)');
+
+
 	define('CP_REVS', CP_PREFIX.'revisions');
 	
 	define('CP_WALLETS', CP_PREFIX.'wallets');

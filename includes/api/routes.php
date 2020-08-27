@@ -19,6 +19,7 @@
     // user/ wallet folder
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-create-wallet.php'; // Example
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-send-money.php'; // Example
+    require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-create-currencies.php'; // Example
 
 
     // global 
@@ -40,6 +41,12 @@
                 'methods' => 'POST',
                 'callback' => array('CP_User_Send_Money','listen'),
             ));
+
+            register_rest_route( 'coinpress/v1/user/wallet', 'currencies', array(
+                'methods' => 'POST',
+                'callback' => array('CP_Create_Currencies','listen'),
+            ));
+
 
     }
     add_action( 'rest_api_init', 'coinpress_route' );
