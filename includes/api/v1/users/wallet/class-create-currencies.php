@@ -62,11 +62,11 @@
 
             $user = self::catch_post();
 
-            $title      = $user['wpid'];
-            $info       = $user['title'];
-            $abbrev     = $user['info'];
-            $exchange   = $user['abbrev'];
-            $wpid       = $user['exchange'];
+            $title      = $user['title'];
+            $info       = $user['info'];
+            $abbrev     = $user['abbrev'];
+            $exchange   = $user['exchange'];
+            $wpid       = $user['wpid'];
 
 
             /**

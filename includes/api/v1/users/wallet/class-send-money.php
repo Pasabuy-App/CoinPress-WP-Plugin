@@ -38,9 +38,40 @@
                 );
             }
 
+            if (!isset($_POST['recipient']) || !isset($_POST['amount'])) {
+                return array(
+                    "status" => "unknown",
+                    "message" => "Please contact your administrator. Request unknown!",
+                );
+            }
+            
+            if (empty($_POST['recipient']) || empty($_POST['amount'])) {
+                return array(
+                    "status" => "failed",
+                    "message" => "Required fields cannot be empty.",
+                );
+            }
+
+            if ($_POST['amount'] == '0'  ) {
+                return array(
+                    "status" => "failed",
+                    "message" => "Cannot send a money without money.",
+                );
+            }
+
+            $master_key = DV_Library_Config::dv_get_config('master_key', 123);
+
             $user = self::catch_post();
 
             $wpdb->query("START TRANSACTION");
+
+            // $check_recipient = $wpdb->get_row("SELECT ID FROM cp_wallets WHERE wpid = '{$user["recipient"]}'");
+            // if ($check_recipient == NULL) {
+            //     return array(
+            //         "status" => "failed",
+            //         "message" => "Recipient does not exits.",
+            //     );
+            // }
 
             $check_admin = get_user_meta($_POST['wpid'], 'wp_capabilities');
 		
@@ -53,19 +84,32 @@
 
             if ( $verify_role == 'administrator' && $verify_role_status == true ) {
                 // THIS SCRIPT WILL RUN IF WPID ADMIN
-                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash` ) VALUES ( '{$user["sender"]}', '{$user["recipient"]}', '{$user["amount"]}', 'xyz', 'wasd' )  ");
+
+                     
+                // SELECTING PUBLIC KEY OF USER AND RECIPIENT
+                $get_public_key_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
+                $get_public_key_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
+
+                if (!$get_public_key_recipient || !$get_public_key_sender ) {
+                    return array(
+                        "status" => "failed",
+                        "message" => "An error occured while submitting data to server.",
+                    );
+                }
+
+
+                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash` ) VALUES ( '$get_public_key_sender->public_key', ' $get_public_key_recipient->public_key', '{$user["amount"]}', 'xyz', 'wasd' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
 
                 $hash = hash( 'sha256', $get_money_data->sender.$get_money_data->recipient.$get_money_data->amount.$get_money_data->date_created);
 
-                $hash_prevhash = hash( 'sha256', $master_key. $get_money_data->date_created );
-
+                $hash_prevhash = hash( 'sha256', $master_key.$get_money_data->date_created );
                 
-                $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash', `prevhash` = '$hash_prevhash' WHERE ID = $get_money_id ");
+                $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash', `prevhash` = '$hash_prevhash', `hash_id` = SHA2( '$get_money_id' , 256) WHERE ID = $get_money_id ");
 
-                if ($send_money_id < 1 || empty($get_money_data) ||  $update_transaction < 1 ) {
+                if ($get_money_id < 1 || empty($get_money_data) ||  $update_transaction < 1 ) {
                     $wpdb->query("ROLLBACK");
             
                     return array(
@@ -80,6 +124,7 @@
                         "message" => "Data has been added successfully."
                     );
                 }
+
             }else{
                 // THIS SCRIPT WILL RUN IF WPID IS NOT USER
 
@@ -103,8 +148,20 @@
                     );
                 }
 
+
+                // SELECTING PUBLIC KEY OF USER AND RECIPIENT
+                $get_public_key_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
+                $get_public_key_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
+
+                if (!$get_public_key_recipient || !$get_public_key_sender ) {
+                    return array(
+                        "status" => "failed",
+                        "message" => "An error occured while submitting data to server.",
+                    );
+                }
+
                 // Executing of transaction                     
-                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount` ) VALUES ( '{$user["sender"]}', '{$user["recipient"]}', '{$user["amount"]}' )  ");
+                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount` ) VALUES ( '$get_public_key_sender->public_key', '$get_public_key_recipient->public_key', '{$user["amount"]}' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
@@ -112,11 +169,9 @@
                 // Hash transaction data for curhash
                 $hash = hash( 'sha256', $get_money_data->sender.$get_money_data->recipient.$get_money_data->amount.$get_money_data->date_created);
 
-                $master_key = DV_Library_Config::dv_get_config('master_key', 123);
-
                 $hash_prevhash = hash( 'sha256', $master_key. $get_money_data->date_created );
                 
-                $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash', `prevhash` = '$hash_prevhash' WHERE ID = $get_money_id ");
+                $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash', `prevhash` = '$hash_prevhash', `hash_id` = SHA2( '$get_money_id' , 256) WHERE ID = $get_money_id ");
 
                 if ($get_money_id < 1 || empty($get_money_data) || $update_transaction < 1 ) {
                     $wpdb->query("ROLLBACK");

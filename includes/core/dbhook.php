@@ -43,7 +43,6 @@
 				$sql .= " `hash_id` varchar(255) NOT NULL COMMENT 'Config Description', ";
 				$sql .= " `wpid` bigint(20) NOT NULL COMMENT 'User ID of Wallet owner', ";
 				$sql .= " `currency` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Currency ID', ";
-				$sql .= " `curhash` varchar(255) NOT NULL COMMENT 'Last Transaction hash', ";
 				$sql .= " `public_key` varchar(255) NOT NULL COMMENT 'Hash ID of this Wallet', ";
 				$sql .= " `date_created` datetime DEFAULT current_timestamp() COMMENT 'Date wallet was created', ";
 				$sql .= "PRIMARY KEY (`ID`) ";
@@ -56,8 +55,8 @@
 			$sql = "CREATE TABLE `".$tbl_transac."` (";
 				$sql .= "  `ID` bigint(20) NOT NULL AUTO_INCREMENT, ";
 				$sql .= "  `hash_id` varchar(255) NOT NULL COMMENT 'Config Description', ";
-				$sql .= "  `sender` bigint(20) NOT NULL, ";
-				$sql .= "  `recipient` bigint(20) NOT NULL, ";
+				$sql .= "  `sender` varchar(255) NOT NULL, ";
+				$sql .= "  `recipient` varchar(255) NOT NULL, ";
 				$sql .= "  `amount` decimal(20,2) NOT NULL, ";
 				$sql .= "  `prevhash` varchar(255) NOT NULL, ";
 				$sql .= "  `curhash` varchar(255) NOT NULL, ";
@@ -106,7 +105,7 @@
 		}
 		
 		if ($verify == true) {
-			$wpdb->query(" INSERT INTO cp_currencies  (ID, title, info, abbrev, exchange, created_by) VALUES (1, 'Control', 'Origin', 'CTR', '1', '1' );
+			$wpdb->query(" INSERT INTO cp_currencies  (ID, hash_id, title, info, abbrev, exchange, created_by) VALUES (1, SHA2( '1' , 256), 'Control', 'Origin', 'CTR', '1', '1' );
 			");
 
 			$wpdb->query("  INSERT INTO cp_wallets (ID, wpid, currency) VALUES  (1, 1, 1 )");
@@ -120,8 +119,19 @@
 				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
 				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
 				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
+				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
 				substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed)*36+1, 1)
-			  )
+			  ), hash_id = SHA2( '1' , 256)
 			  WHERE ID = 1;");
 		}
 

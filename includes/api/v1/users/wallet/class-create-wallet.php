@@ -52,6 +52,13 @@
                 );
             }
 
+            if ($_POST['currency'] === '1') {
+                return array(
+                    "status" => "failed",
+                    "message" => "This currency is not available.",
+                );
+            }
+
             $date = CP_Globals::date_stamp();
 
             $table_wallet = CP_WALLETS;
@@ -90,15 +97,17 @@
 
             $public_key = CP_Globals::update_public_key_hash($wallet_id, 'cp_wallets');
 
-            if ($user_wallet < 1 ||  $public_key == false ) {
-            $wpdb->query("ROLLBCK");
+            $update_hash_id = $wpdb->query("UPDATE cp_wallets SET hash_id = SHA2( '$wallet_id' , 256)  WHERE ID =  $wallet_id  ");
+
+            if ($user_wallet < 1 ||  $public_key == false || $update_hash_id < 1 ) {
+                $wpdb->query("ROLLBCK");
 
                 return array(
                     "status" => "failed",
                     "message" => "An error occured while submitting data to server."
                 );
             }else{
-            $wpdb->query("COMMIT");
+                $wpdb->query("COMMIT");
 
                 return array(
                     "status" => "success",
