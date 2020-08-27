@@ -21,14 +21,14 @@
             global $wpdb;
 
             // Step 1: Validate user
-            // if ( DV_Verification::is_verified() == false ) {
-            //     return rest_ensure_response( 
-            //         array(
-            //             "status" => "unknown",
-            //             "message" => "Please contact your administrator. Verification Issue!",
-            //         )
-            //     );
-            // }
+            if ( DV_Verification::is_verified() == false ) {
+                return rest_ensure_response( 
+                    array(
+                        "status" => "unknown",
+                        "message" => "Please contact your administrator. Verification Issue!",
+                    )
+                );
+            }
 
             $plugin = CP_Globals::verify_prerequisites();
             if ($plugin !== true) {
@@ -39,6 +39,7 @@
             }
 
             $user = self::catch_post();
+
             $wpdb->query("START TRANSACTION");
 
             $check_admin = get_user_meta($_POST['wpid'], 'wp_capabilities');
@@ -58,8 +59,11 @@
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
 
                 $hash = hash( 'sha256', $get_money_data->sender.$get_money_data->recipient.$get_money_data->amount.$get_money_data->date_created);
+
+                $hash_prevhash = hash( 'sha256', $master_key. $get_money_data->date_created );
+
                 
-                $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash' WHERE ID = $get_money_id ");
+                $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash', `prevhash` = '$hash_prevhash' WHERE ID = $get_money_id ");
 
                 if ($send_money_id < 1 || empty($get_money_data) ||  $update_transaction < 1 ) {
                     $wpdb->query("ROLLBACK");
@@ -83,7 +87,7 @@
                     Verifying Balance of user before executing transaction                    
                 */
 
-                $verify_sender_balance = $wpdb->get_row(" SELECT COALESCE(  SUM(COALESCE( CASE WHEN recipient = '{$user["sender"]}' THEN amount END , 0 ))  -  SUM(COALESCE( CASE WHEN sender = '{$user["sender"]}' THEN amount END, 0 )), 0 ) as total_balance FROM	cp_transaction ");
+                 $verify_sender_balance = $wpdb->get_row(" SELECT COALESCE(  SUM(COALESCE( CASE WHEN recipient = '{$user["sender"]}' THEN amount END , 0 ))  -  SUM(COALESCE( CASE WHEN sender = '{$user["sender"]}' THEN amount END, 0 )), 0 ) as total_balance FROM	cp_transaction ");
                 
                 if ((int)$verify_sender_balance->total_balance == 0) {
                     return array(
@@ -107,8 +111,12 @@
                 
                 // Hash transaction data for curhash
                 $hash = hash( 'sha256', $get_money_data->sender.$get_money_data->recipient.$get_money_data->amount.$get_money_data->date_created);
+
+                $master_key = DV_Library_Config::dv_get_config('master_key', 123);
+
+                $hash_prevhash = hash( 'sha256', $master_key. $get_money_data->date_created );
                 
-                $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash' WHERE ID = $get_money_id ");
+                $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash', `prevhash` = '$hash_prevhash' WHERE ID = $get_money_id ");
 
                 if ($get_money_id < 1 || empty($get_money_data) || $update_transaction < 1 ) {
                     $wpdb->query("ROLLBACK");

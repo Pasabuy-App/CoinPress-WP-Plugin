@@ -61,6 +61,15 @@
             $currency = $_POST['currency'];
 
             $wpdb->query("START TRANSACTION");
+
+            $check_currency = $wpdb->get_row("SELECT ID FROM cp_currencies WHERE ID = '$currency' ");
+            if (!$check_currency) {
+                return array(
+                    "status" => "failed",
+                    "message" => "This currencies does not exists.",
+                );
+            }
+
             $check_user_wallets = $wpdb->get_results("SELECT * FROM cp_wallets WHERE wpid = $user_id ");
             $check = array();
             
