@@ -21,6 +21,7 @@
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-send-money.php'; // Example
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-create-currencies.php'; // Example
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-select-balance.php'; // Example
+    require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-listing.php'; // Example
 
 
     // global 
@@ -56,6 +57,11 @@
             register_rest_route( 'coinpress/v1/user/wallet', 'balance', array(
                 'methods' => 'POST',
                 'callback' => array('CP_Select_Balance','listen'),
+            ));
+
+            register_rest_route( 'coinpress/v1/user/wallet', 'list', array(
+                'methods' => 'POST',
+                'callback' => array('CP_Listing_Wallet','listen'),
             ));
             
 
