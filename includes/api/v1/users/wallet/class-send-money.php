@@ -21,14 +21,14 @@
             global $wpdb;
 
             // Step 1: Validate user
-            if ( DV_Verification::is_verified() == false ) {
-                return rest_ensure_response( 
-                    array(
-                        "status" => "unknown",
-                        "message" => "Please contact your administrator. Verification Issue!",
-                    )
-                );
-            }
+            // if ( DV_Verification::is_verified() == false ) {
+            //     return rest_ensure_response( 
+            //         array(
+            //             "status" => "unknown",
+            //             "message" => "Please contact your administrator. Verification Issue!",
+            //         )
+            //     );
+            // }
 
             $plugin = CP_Globals::verify_prerequisites();
             if ($plugin !== true) {
@@ -84,7 +84,6 @@
 
             if ( $verify_role == 'administrator' && $verify_role_status == true ) {
                 // THIS SCRIPT WILL RUN IF WPID ADMIN
-
                      
                 // SELECTING PUBLIC KEY OF USER AND RECIPIENT
                 $get_public_key_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
@@ -97,8 +96,7 @@
                     );
                 }
 
-
-                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash` ) VALUES ( '$get_public_key_sender->public_key', ' $get_public_key_recipient->public_key', '{$user["amount"]}', 'xyz', 'wasd' )  ");
+                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash` ) VALUES ( '$get_public_key_sender->public_key', '$get_public_key_recipient->public_key', '{$user["amount"]}', 'xyz', 'wasd' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
@@ -132,7 +130,29 @@
                     Verifying Balance of user before executing transaction                    
                 */
 
-                 $verify_sender_balance = $wpdb->get_row(" SELECT COALESCE(  SUM(COALESCE( CASE WHEN recipient = '{$user["sender"]}' THEN amount END , 0 ))  -  SUM(COALESCE( CASE WHEN sender = '{$user["sender"]}' THEN amount END, 0 )), 0 ) as total_balance FROM	cp_transaction ");
+                // SELECTING PUBLIC KEY OF USER AND RECIPIENT
+                $get_public_key_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
+                $get_public_key_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
+
+                if (!$get_public_key_recipient || !$get_public_key_sender ) {
+                    return array(
+                        "status" => "failed",
+                        "message" => "An error occured while submitting data to server.",
+                    );
+                }
+
+                $verify_sender_balance = $wpdb->get_row(" SELECT 
+                    COALESCE(  
+                        SUM(COALESCE( CASE WHEN recipient = '$get_public_key_sender->public_key' THEN amount END , 0 ))  -  
+                        SUM(COALESCE( CASE WHEN sender = '$get_public_key_sender->public_key' THEN amount END, 0 ))
+                        , 0 ) as total_balance FROM	cp_transaction ");
+
+                if (substr(strval((int)$verify_sender_balance->total_balance), 0, 1) == "-"){
+                    return array(
+                        "status" => "failed",
+                        "message" => "You dont have enough balance in your wallet.",
+                    );
+                }
                 
                 if ((int)$verify_sender_balance->total_balance == 0) {
                     return array(
@@ -149,16 +169,7 @@
                 }
 
 
-                // SELECTING PUBLIC KEY OF USER AND RECIPIENT
-                $get_public_key_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
-                $get_public_key_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
-
-                if (!$get_public_key_recipient || !$get_public_key_sender ) {
-                    return array(
-                        "status" => "failed",
-                        "message" => "An error occured while submitting data to server.",
-                    );
-                }
+                
 
                 // Executing of transaction                     
                 $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount` ) VALUES ( '$get_public_key_sender->public_key', '$get_public_key_recipient->public_key', '{$user["amount"]}' )  ");
