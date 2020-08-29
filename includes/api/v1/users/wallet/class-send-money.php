@@ -86,17 +86,24 @@
                 // THIS SCRIPT WILL RUN IF WPID ADMIN
                      
                 // SELECTING PUBLIC KEY OF USER AND RECIPIENT
-                $get_public_key_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
-                $get_public_key_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
+                $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT hash_id FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
+                $get_id_recipient = $wpdb->get_row($wpdb->prepare( " SELECT hash_id FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
 
-                if (!$get_public_key_recipient || !$get_public_key_sender ) {
+                if (!$get_id_sender  ) {
                     return array(
                         "status" => "failed",
-                        "message" => "An error occured while submitting data to server.",
+                        "message" => "You must have wallet first.",
+                    );
+                }
+                
+                if (!$get_id_recipient  ) {
+                    return array(
+                        "status" => "failed",
+                        "message" => "You must have wallet first.",
                     );
                 }
 
-                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash` ) VALUES ( '$get_public_key_sender->public_key', '$get_public_key_recipient->public_key', '{$user["amount"]}', 'xyz', 'wasd' )  ");
+                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash` ) VALUES ( '$get_id_sender->hash_id', '$get_id_recipient->hash_id', '{$user["amount"]}', 'xyz', 'wasd' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
@@ -131,23 +138,31 @@
                 */
 
                 // SELECTING PUBLIC KEY OF USER AND RECIPIENT
-                $get_public_key_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
-                $get_public_key_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
+                $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT hash_id FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
+                $get_id_recipient = $wpdb->get_row($wpdb->prepare( " SELECT hash_id FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
 
-                if (!$get_public_key_recipient || !$get_public_key_sender ) {
+                if (!$get_id_sender  ) {
                     return array(
                         "status" => "failed",
-                        "message" => "An error occured while submitting data to server.",
+                        "message" => "You must have wallet first.",
+                    );
+                }
+                
+                if (!$get_id_recipient  ) {
+                    return array(
+                        "status" => "failed",
+                        "message" => "You must have wallet first.",
                     );
                 }
 
                 $verify_sender_balance = $wpdb->get_row(" SELECT 
                     COALESCE(  
-                        SUM(COALESCE( CASE WHEN recipient = '$get_public_key_sender->public_key' THEN amount END , 0 ))  -  
-                        SUM(COALESCE( CASE WHEN sender = '$get_public_key_sender->public_key' THEN amount END, 0 ))
+                        SUM(COALESCE( CASE WHEN recipient = '$get_id_sender->hash_id' THEN amount END , 0 ))  -  
+                        SUM(COALESCE( CASE WHEN sender = '$get_id_sender->hash_id' THEN amount END, 0 ))
                         , 0 ) as total_balance FROM	cp_transaction ");
+     
 
-                if (substr(strval((int)$verify_sender_balance->total_balance), 0, 1) == "-"){
+                if ((int)$verify_sender_balance->total_balance < 0 == true){
                     return array(
                         "status" => "failed",
                         "message" => "You dont have enough balance in your wallet.",
@@ -168,11 +183,8 @@
                     );
                 }
 
-
-                
-
                 // Executing of transaction                     
-                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount` ) VALUES ( '$get_public_key_sender->public_key', '$get_public_key_recipient->public_key', '{$user["amount"]}' )  ");
+                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount` ) VALUES ( '$get_id_sender->hash_id', '$get_id_recipient->hash_id', '{$user["amount"]}' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
@@ -184,7 +196,7 @@
                 
                 $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash', `prevhash` = '$hash_prevhash', `hash_id` = SHA2( '$get_money_id' , 256) WHERE ID = $get_money_id ");
 
-                if ($get_money_id < 1 || empty($get_money_data) || $update_transaction < 1 ) {
+                if ( $send_money < 1 || $get_money_id < 1 || empty($get_money_data) || $update_transaction < 1 ) {
                     $wpdb->query("ROLLBACK");
                     return array(
                         "status" => "failed",
