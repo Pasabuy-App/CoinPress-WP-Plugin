@@ -46,7 +46,7 @@
 				$sql .= " `public_key` varchar(255) NOT NULL COMMENT 'Hash ID of this Wallet', ";
 				$sql .= " `date_created` datetime DEFAULT current_timestamp() COMMENT 'Date wallet was created', ";
 				$sql .= "PRIMARY KEY (`ID`) ";
-				$sql .= ") ENGINE = InnoDB AUTO_INCREMENT=3 ; ";
+				$sql .= ") ENGINE = InnoDB ; ";
 			$result = $wpdb->get_results($sql);
 		}
 
@@ -62,7 +62,7 @@
 				$sql .= "  `curhash` varchar(255) NOT NULL, ";
 				$sql .= "  `date_created` datetime DEFAULT current_timestamp(), ";
 				$sql .= "PRIMARY KEY (`ID`) ";
-				$sql .= ") ENGINE = InnoDB AUTO_INCREMENT=4; ";
+				$sql .= ") ENGINE = InnoDB ; ";
 			$result = $wpdb->get_results($sql);
 		}
 
@@ -78,7 +78,7 @@
 				$sql .= "  `created_by` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Created the Currency', ";
 				$sql .= " `date_created` datetime DEFAULT current_timestamp() COMMENT 'Date of currency creation', ";
 				$sql .= "PRIMARY KEY (`ID`) ";
-				$sql .= ") ENGINE = InnoDB AUTO_INCREMENT=4 AUTO_INCREMENT=4; ";
+				$sql .= ") ENGINE = InnoDB ; ";
 			$result = $wpdb->get_results($sql);
 		}
 
