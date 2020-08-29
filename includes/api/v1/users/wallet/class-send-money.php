@@ -21,14 +21,14 @@
             global $wpdb;
 
             // Step 1: Validate user
-            // if ( DV_Verification::is_verified() == false ) {
-            //     return rest_ensure_response( 
-            //         array(
-            //             "status" => "unknown",
-            //             "message" => "Please contact your administrator. Verification Issue!",
-            //         )
-            //     );
-            // }
+            if ( DV_Verification::is_verified() == false ) {
+                return rest_ensure_response( 
+                    array(
+                        "status" => "unknown",
+                        "message" => "Please contact your administrator. Verification Issue!",
+                    )
+                );
+            }
 
             $plugin = CP_Globals::verify_prerequisites();
             if ($plugin !== true) {
@@ -59,19 +59,18 @@
                 );
             }
 
+            if ($_POST['wpid'] === $_POST['recipient']) {
+                return array(
+                    "status" => "failed",
+                    "message" => "Cannot send money in your own wallet.",
+                );
+            }
+
             $master_key = DV_Library_Config::dv_get_config('master_key', 123);
 
             $user = self::catch_post();
 
             $wpdb->query("START TRANSACTION");
-
-            // $check_recipient = $wpdb->get_row("SELECT ID FROM cp_wallets WHERE wpid = '{$user["recipient"]}'");
-            // if ($check_recipient == NULL) {
-            //     return array(
-            //         "status" => "failed",
-            //         "message" => "Recipient does not exits.",
-            //     );
-            // }
 
             $check_admin = get_user_meta($_POST['wpid'], 'wp_capabilities');
 		
@@ -86,8 +85,8 @@
                 // THIS SCRIPT WILL RUN IF WPID ADMIN
                      
                 // SELECTING PUBLIC KEY OF USER AND RECIPIENT
-                $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT hash_id FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
-                $get_id_recipient = $wpdb->get_row($wpdb->prepare( " SELECT hash_id FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
+                $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
+                $get_id_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
 
                 if (!$get_id_sender  ) {
                     return array(
@@ -103,7 +102,7 @@
                     );
                 }
 
-                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash` ) VALUES ( '$get_id_sender->hash_id', '$get_id_recipient->hash_id', '{$user["amount"]}', 'xyz', 'wasd' )  ");
+                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash` ) VALUES ( '$get_id_sender->public_key', '$get_id_recipient->public_key', '{$user["amount"]}', 'xyz', 'wasd' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
@@ -138,8 +137,8 @@
                 */
 
                 // SELECTING PUBLIC KEY OF USER AND RECIPIENT
-                $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT hash_id FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
-                $get_id_recipient = $wpdb->get_row($wpdb->prepare( " SELECT hash_id FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
+                $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
+                $get_id_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
 
                 if (!$get_id_sender  ) {
                     return array(
@@ -157,8 +156,8 @@
 
                 $verify_sender_balance = $wpdb->get_row(" SELECT 
                     COALESCE(  
-                        SUM(COALESCE( CASE WHEN recipient = '$get_id_sender->hash_id' THEN amount END , 0 ))  -  
-                        SUM(COALESCE( CASE WHEN sender = '$get_id_sender->hash_id' THEN amount END, 0 ))
+                        SUM(COALESCE( CASE WHEN recipient = '$get_id_sender->public_key' THEN amount END , 0 ))  -  
+                        SUM(COALESCE( CASE WHEN sender = '$get_id_sender->public_key' THEN amount END, 0 ))
                         , 0 ) as total_balance FROM	cp_transaction ");
      
 
@@ -184,7 +183,7 @@
                 }
 
                 // Executing of transaction                     
-                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount` ) VALUES ( '$get_id_sender->hash_id', '$get_id_recipient->hash_id', '{$user["amount"]}' )  ");
+                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount` ) VALUES ( '$get_id_sender->public_key', '$get_id_recipient->public_key', '{$user["amount"]}' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
