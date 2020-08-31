@@ -63,7 +63,6 @@
 
             $table_wallet = CP_WALLETS;
             $table_wallet_fields = CP_WALLETS_FIELDS;
-            
             $user_id = $_POST['wpid'];
             $currency = $_POST['currency'];
 
@@ -114,6 +113,5 @@
                     "message" => "Data has been submitted successfully."
                 );
             }
-
         }
     }

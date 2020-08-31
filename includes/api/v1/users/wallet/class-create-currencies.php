@@ -68,7 +68,6 @@
             $exchange   = $user['exchange'];
             $wpid       = $user['wpid'];
 
-
             /**
                Validating title if already existed 
             */
@@ -112,7 +111,6 @@
                     "status" => "success",
                     "message" => "Data has been added successfully ."
                 );
-
             }
         }
 

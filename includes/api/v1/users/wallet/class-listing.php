@@ -33,13 +33,12 @@
             $plugin = CP_Globals::verify_prerequisites();
             if ($plugin !== true) {
                 return array(
-                        "status" => "unknown",
-                        "message" => "Please contact your administrator. ".$plugin." plugin missing!",
+                    "status" => "unknown",
+                    "message" => "Please contact your administrator. ".$plugin." plugin missing!",
                 );
             }
             
             isset($_POST['type'])? $type = $_POST['type']:  $type =  NULL ;
-            
             $type == '0'? $abbrev = NULL: $abbrev = $type;
             
             $sql = "SELECT 

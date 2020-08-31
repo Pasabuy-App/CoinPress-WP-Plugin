@@ -220,6 +220,5 @@
             $curl_user['amount'] = $_POST['amount'];
 
             return $curl_user;
-
         }
     }

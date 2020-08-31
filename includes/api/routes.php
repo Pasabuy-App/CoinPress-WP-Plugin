@@ -14,7 +14,6 @@
 <?php
 
     //Require the USocketNet class which have the core function of this plguin. 
-    require plugin_dir_path(__FILE__) . '/v1/users/class-auth.php'; // Example
 
     // user/ wallet folder
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-create-wallet.php'; // Example
@@ -23,7 +22,6 @@
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-select-balance.php'; // Example
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-listing.php'; // Example
 
-
     // global 
     require plugin_dir_path(__FILE__) . '/v1/class-globals.php'; // Example
 
@@ -31,11 +29,6 @@
 	// Init check if USocketNet successfully request from wapi.
     function coinpress_route()
     {
-        // Example
-            register_rest_route( 'coinpress/v1/user', 'auth', array(
-                'methods' => 'POST',
-                'callback' => array('CP_Authenticate','listen'),
-            ));     
         /*
          *  WALLET RESTAPI
         */

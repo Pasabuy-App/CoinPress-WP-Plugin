@@ -21,14 +21,14 @@
             global $wpdb;
 
             // Step 1: Validate user
-            // if ( DV_Verification::is_verified() == false ) {
-            //     return rest_ensure_response( 
-            //         array(
-            //             "status" => "unknown",
-            //             "message" => "Please contact your administrator. Verification Issue!",
-            //         )
-            //     );
-            // }
+            if ( DV_Verification::is_verified() == false ) {
+                return rest_ensure_response( 
+                    array(
+                        "status" => "unknown",
+                        "message" => "Please contact your administrator. Verification Issue!",
+                    )
+                );
+            }
 
             $plugin = CP_Globals::verify_prerequisites();
             if ($plugin !== true) {

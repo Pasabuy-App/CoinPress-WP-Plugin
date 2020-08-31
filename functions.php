@@ -22,6 +22,7 @@
 
     #region WP Recommendation - Prevent direct initilization of the plugin.
     if ( !defined( 'ABSPATH' ) ) { exit; } // Exit if accessed directly
+    
     if ( ! function_exists( 'is_plugin_active' ) ) 
     {
         require_once( ABSPATH . 'wp-admin/includes/plugin.php' );

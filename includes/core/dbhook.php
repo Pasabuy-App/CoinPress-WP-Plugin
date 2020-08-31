@@ -136,5 +136,4 @@
 		}
 
 	}
-
 	add_action( 'activated_plugin', 'cp_dbhook_activate');
