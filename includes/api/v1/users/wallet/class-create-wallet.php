@@ -11,6 +11,7 @@
 	*/
 
 	class CP_Create_User_Wallet {
+
         public static function listen(){
             return rest_ensure_response( 
                 self::listen_open()
@@ -18,26 +19,29 @@
         }
     
         public static function listen_open(){
+            
             global $wpdb;
+            $table_wallet = CP_WALLETS;
+            $table_wallet_fields = CP_WALLETS_FIELDS;
 
-            // Step 1: Validate user
-            if ( DV_Verification::is_verified() == false ) {
-                return rest_ensure_response( 
-                    array(
-                        "status" => "unknown",
-                        "message" => "Please contact your administrator. Verification Issue!",
-                    )
-                );
-            }
-
+            // Step 1: Check if prerequisites plugin are missing
             $plugin = CP_Globals::verify_prerequisites();
             if ($plugin !== true) {
                 return array(
-                        "status" => "unknown",
-                        "message" => "Please contact your administrator. ".$plugin." plugin missing!",
+                    "status" => "unknown",
+                    "message" => "Please contact your administrator. ".$plugin." plugin missing!",
                 );
             }
 
+            // Step 2: Validate user
+            if ( DV_Verification::is_verified() == false ) {
+                return array(
+                    "status" => "unknown",
+                    "message" => "Please contact your administrator. Verification issue!",
+                );
+            }
+
+            // Step 3: Check if required parameters are passed
             if (!isset($_POST['currency'])) {
                 return array(
                     "status" => "unknown",
@@ -45,6 +49,7 @@
                 );
             }
 
+            // Step 4: Check if parameters passed are empty
             if (empty($_POST['currency'])) {
                 return array(
                     "status" => "failed",
@@ -52,6 +57,7 @@
                 );
             }
 
+            // Step 5: Validate currency
             if ($_POST['currency'] === '1') {
                 return array(
                     "status" => "failed",
@@ -66,31 +72,32 @@
             $user_id = $_POST['wpid'];
             $currency = $_POST['currency'];
 
+            // Step 6: Start mysql transaction
             $wpdb->query("START TRANSACTION");
 
-            $check_currency = $wpdb->get_row("SELECT ID FROM cp_currencies WHERE ID = '$currency' ");
-            if (!$check_currency) {
-                return array(
-                    "status" => "failed",
-                    "message" => "This currencies does not exists.",
-                );
-            }
-
-            $check_user_wallets = $wpdb->get_results("SELECT * FROM cp_wallets WHERE wpid = $user_id ");
-            $check = array();
-            
-            for ($count=0; $count < count($check_user_wallets) ; $count++) { 
-                $check[] = $check_user_wallets[$count]->currency;
-
-                if (in_array($check_user_wallets[$count]->currency, (array)$currency ) ) {
+                $check_currency = $wpdb->get_row("SELECT ID FROM cp_currencies WHERE ID = '$currency' ");
+                if (!$check_currency) {
                     return array(
-                        "status" => "failed",
-                        "message" => "This user wallet is already exists.",
+                        "status" => "success",
+                        "message" => "This currencies does not exists.",
                     );
                 }
-            }
 
-            // Insert wallet
+                $check_user_wallets = $wpdb->get_results("SELECT * FROM cp_wallets WHERE wpid = $user_id ");
+                $check = array();
+                
+                for ($count=0; $count < count($check_user_wallets) ; $count++) { 
+                    $check[] = $check_user_wallets[$count]->currency;
+
+                    if (in_array($check_user_wallets[$count]->currency, (array)$currency ) ) {
+                        return array(
+                            "status" => "success",
+                            "message" => "This user wallet is already exists.",
+                        );
+                    }
+                }
+
+            // Step 7: Insert wallet
             $user_wallet = $wpdb->query(" INSERT INTO cp_wallets ( wpid, currency) VALUES ( '$user_id', '$currency' )  ");
             $wallet_id = $wpdb->insert_id;
 
@@ -98,16 +105,16 @@
 
             $update_hash_id = $wpdb->query("UPDATE cp_wallets SET hash_id = SHA2( '$wallet_id' , 256)  WHERE ID =  $wallet_id  ");
 
+            // Step 8: Check if any queries above failed
             if ($user_wallet < 1 ||  $public_key == false || $update_hash_id < 1 ) {
                 $wpdb->query("ROLLBCK");
-
                 return array(
                     "status" => "failed",
                     "message" => "An error occured while submitting data to server."
                 );
             }else{
+            // Step 8: Commit if no errors found
                 $wpdb->query("COMMIT");
-
                 return array(
                     "status" => "success",
                     "message" => "Data has been submitted successfully."
