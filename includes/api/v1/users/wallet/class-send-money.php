@@ -31,12 +31,12 @@
             }
 
             // Step 2: Validate user
-            if ( DV_Verification::is_verified() == false ) {
+            /* if ( DV_Verification::is_verified() == false ) {
                 return array(
                     "status" => "unknown",
                     "message" => "Please contact your administrator. Verification issue!",
                 );
-            }
+            } */
 
 
             // Step 3: Check if required parameters are passed
@@ -113,14 +113,14 @@
                 $get_id_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
                 if (!$get_id_sender  ) {
                     return array(
-                        "status" => "success",
+                        "status" => "failed",
                         "message" => "You must have wallet first.",
                     );
                 }
 
                 if (!$get_id_recipient  ) {
                     return array(
-                        "status" => "success",
+                        "status" => "failed",
                         "message" => "You must have wallet first.",
                     );
                 }
@@ -168,14 +168,14 @@
                 $get_id_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
                 if (!$get_id_sender  ) {
                     return array(
-                        "status" => "success",
+                        "status" => "failed",
                         "message" => "You must have wallet first.",
                     );
                 }
 
                 if (!$get_id_recipient  ) {
                     return array(
-                        "status" => "success",
+                        "status" => "failed",
                         "message" => "You must have wallet first.",
                     );
                 }
@@ -188,27 +188,27 @@
 
                 if ((int)$verify_sender_balance->total_balance < 0 == true){
                     return array(
-                        "status" => "success",
+                        "status" => "failed",
                         "message" => "You dont have enough balance in your wallet.",
                     );
                 }
 
                 if ((int)$verify_sender_balance->total_balance == 0) {
                     return array(
-                        "status" => "success",
+                        "status" => "failed",
                         "message" => "You dont have enough balance in your wallet.",
                     );
                 }
 
                 if ((int)$user['amount'] > (int)$verify_sender_balance->total_balance  ){
                     return array(
-                        "status" => "success",
+                        "status" => "failed",
                         "message" => "Your balance is lower than the amount that your sending",
                     );
                 }
 
                 // Step 13: Executing of transaction
-                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount` ) VALUES ( '$get_id_sender->public_key', '$get_id_recipient->public_key', '{$user["amount"]}' )  ");
+                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `currency` ) VALUES ( '$get_id_sender->public_key', '$get_id_recipient->public_key', '{$user["amount"]}', '{$user["currency"]}' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");

@@ -4,7 +4,7 @@
 		exit;
 	}
 
-	/** 
+	/**
         * @package coinpress-wp-plugin
 		* @version 0.1.0
 		* This is the primary gateway of all the rest api request.
@@ -13,7 +13,7 @@
 
 <?php
 
-    //Require the USocketNet class which have the core function of this plguin. 
+    //Require the USocketNet class which have the core function of this plguin.
 
     // user/ wallet folder
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-create-wallet.php'; // Example
@@ -21,11 +21,12 @@
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-create-currencies.php'; // Example
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-select-balance.php'; // Example
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-listing.php'; // Example
+    require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-transacs.php'; // Example
 
-    // global 
+    // global
     require plugin_dir_path(__FILE__) . '/v1/class-globals.php'; // Example
 
-	
+
 	// Init check if USocketNet successfully request from wapi.
     function coinpress_route()
     {
@@ -56,8 +57,11 @@
                 'methods' => 'POST',
                 'callback' => array('CP_Listing_Wallet','listen'),
             ));
-            
 
+            register_rest_route( 'coinpress/v1/user/transac', 'list', array(
+                'methods' => 'POST',
+                'callback' => array('CP_Transsaction_Listing','listen'),
+            ));
     }
     add_action( 'rest_api_init', 'coinpress_route' );
 
