@@ -12,11 +12,11 @@
 	class CP_User_Send_Money {
 
         public static function listen(){
-            return rest_ensure_response( 
+            return rest_ensure_response(
                 self::listen_open()
             );
         }
-    
+
         public static function listen_open(){
 
             global $wpdb;
@@ -38,7 +38,7 @@
                 );
             }
 
-            
+
             // Step 3: Check if required parameters are passed
             if (!isset($_POST['recipient']) || !isset($_POST['amount'])) {
                 return array(
@@ -46,7 +46,7 @@
                     "message" => "Please contact your administrator. Request unknown!",
                 );
             }
-            
+
             // Step 4: Check if parameters passed are empty
             if (empty($_POST['recipient']) || empty($_POST['amount'])) {
                 return array(
@@ -75,11 +75,28 @@
 
             $user = self::catch_post();
 
+            // insering currency
+            $check_currency = $wpdb->get_row("SELECT * FROM cp_currencies WHERE hash_id = '{$user["currency"]}'");
+
+            if (empty($check_currency)) {
+                return array(
+                    "status" => "failed",
+                    "message" => "This currencies does not exists.",
+                );
+            }
+
+            if ($check_currency->status == '0') {
+                return array(
+                    "status" => "failed",
+                    "message" => "This currencies is currently inactive.",
+                );
+            }
+
             // Step 7: Start mysql transaction
             $wpdb->query("START TRANSACTION");
 
             $check_admin = get_user_meta($_POST['wpid'], 'wp_capabilities');
-		
+
             foreach ($check_admin as $key => $value) {
                 foreach ($value as $key => $value) {
                     $verify_role = $key;
@@ -90,7 +107,7 @@
             // Step 8: Verify role
             if ( $verify_role == 'administrator' && $verify_role_status == true ) {
                 // THIS SCRIPT WILL RUN IF WPID ADMIN
-                     
+
                 // Step 9: SELECTING PUBLIC KEY OF USER AND RECIPIENT
                 $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
                 $get_id_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
@@ -100,7 +117,7 @@
                         "message" => "You must have wallet first.",
                     );
                 }
-                
+
                 if (!$get_id_recipient  ) {
                     return array(
                         "status" => "success",
@@ -108,7 +125,8 @@
                     );
                 }
 
-                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash` ) VALUES ( '$get_id_sender->public_key', '$get_id_recipient->public_key', '{$user["amount"]}', 'xyz', 'wasd' )  ");
+
+                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash`, `currency`) VALUES ( '$get_id_sender->public_key', '$get_id_recipient->public_key', '{$user["amount"]}', 'xyz', 'wasd', '{$user["currency"]}' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
@@ -116,8 +134,11 @@
                 $hash = hash( 'sha256', $get_money_data->sender.$get_money_data->recipient.$get_money_data->amount.$get_money_data->date_created);
 
                 $hash_prevhash = hash( 'sha256', $master_key.$get_money_data->date_created );
-                
+
                 $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash', `prevhash` = '$hash_prevhash', `hash_id` = SHA2( '$get_money_id' , 256) WHERE ID = $get_money_id ");
+
+
+
 
                 // Step 10: Check if any queries above failed
                 if ($get_money_id < 1 || empty($get_money_data) ||  $update_transaction < 1 ) {
@@ -139,7 +160,7 @@
                 // THIS SCRIPT WILL RUN IF WPID IS NOT USER
 
                 /**
-                    Verifying Balance of user before executing transaction                    
+                    Verifying Balance of user before executing transaction
                 */
 
                 // Step 12: SELECTING PUBLIC KEY OF USER AND RECIPIENT
@@ -151,7 +172,7 @@
                         "message" => "You must have wallet first.",
                     );
                 }
-                
+
                 if (!$get_id_recipient  ) {
                     return array(
                         "status" => "success",
@@ -159,26 +180,26 @@
                     );
                 }
 
-                $verify_sender_balance = $wpdb->get_row(" SELECT 
-                    COALESCE(  
-                        SUM(COALESCE( CASE WHEN recipient = '$get_id_sender->public_key' THEN amount END , 0 ))  -  
+                $verify_sender_balance = $wpdb->get_row(" SELECT
+                    COALESCE(
+                        SUM(COALESCE( CASE WHEN recipient = '$get_id_sender->public_key' THEN amount END , 0 ))  -
                         SUM(COALESCE( CASE WHEN sender = '$get_id_sender->public_key' THEN amount END, 0 ))
                         , 0 ) as total_balance FROM	cp_transaction ");
-     
+
                 if ((int)$verify_sender_balance->total_balance < 0 == true){
                     return array(
                         "status" => "success",
                         "message" => "You dont have enough balance in your wallet.",
                     );
                 }
-                
+
                 if ((int)$verify_sender_balance->total_balance == 0) {
                     return array(
                         "status" => "success",
                         "message" => "You dont have enough balance in your wallet.",
                     );
                 }
-            
+
                 if ((int)$user['amount'] > (int)$verify_sender_balance->total_balance  ){
                     return array(
                         "status" => "success",
@@ -186,17 +207,17 @@
                     );
                 }
 
-                // Step 13: Executing of transaction                     
+                // Step 13: Executing of transaction
                 $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount` ) VALUES ( '$get_id_sender->public_key', '$get_id_recipient->public_key', '{$user["amount"]}' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
-                
+
                 // Step 14: Hash transaction data for curhash
                 $hash = hash( 'sha256', $get_money_data->sender.$get_money_data->recipient.$get_money_data->amount.$get_money_data->date_created);
 
                 $hash_prevhash = hash( 'sha256', $master_key. $get_money_data->date_created );
-                
+
                 $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash', `prevhash` = '$hash_prevhash', `hash_id` = SHA2( '$get_money_id' , 256) WHERE ID = $get_money_id ");
 
                 // Step 15: Check if any queries above failed
@@ -223,6 +244,7 @@
             $curl_user['sender'] = $_POST['wpid'];
             $curl_user['recipient'] = $_POST['recipient'];
             $curl_user['amount'] = $_POST['amount'];
+            $curl_user['currency'] = $_POST['cy'];
 
             return $curl_user;
         }

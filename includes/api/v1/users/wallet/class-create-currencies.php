@@ -12,11 +12,11 @@
 	class CP_Create_Currencies {
 
         public static function listen(){
-            return rest_ensure_response( 
+            return rest_ensure_response(
                 self::listen_open()
             );
         }
-    
+
         public static function listen_open(){
 
             global $wpdb;
@@ -72,7 +72,7 @@
             $wpid       = $user['wpid'];
 
             /**
-               Step 6: Validating title if already existed 
+               Step 6: Validating title if already existed
             */
             $check_title_if_existed = $wpdb->query(" SELECT title  FROM cp_currencies WHERE title REGEXP '^$title' ");
             if ($check_title_if_existed > 0) {

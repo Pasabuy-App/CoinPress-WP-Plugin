@@ -13,13 +13,13 @@
 	class CP_Create_User_Wallet {
 
         public static function listen(){
-            return rest_ensure_response( 
+            return rest_ensure_response(
                 self::listen_open()
             );
         }
-    
+
         public static function listen_open(){
-            
+
             global $wpdb;
             $table_wallet = CP_WALLETS;
             $table_wallet_fields = CP_WALLETS_FIELDS;
@@ -85,8 +85,8 @@
 
                 $check_user_wallets = $wpdb->get_results("SELECT * FROM cp_wallets WHERE wpid = $user_id ");
                 $check = array();
-                
-                for ($count=0; $count < count($check_user_wallets) ; $count++) { 
+
+                for ($count=0; $count < count($check_user_wallets) ; $count++) {
                     $check[] = $check_user_wallets[$count]->currency;
 
                     if (in_array($check_user_wallets[$count]->currency, (array)$currency ) ) {

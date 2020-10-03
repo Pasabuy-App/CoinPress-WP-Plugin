@@ -11,7 +11,7 @@
 	*/
 
 	function cp_dbhook_activate(){
-		
+
 		//Initializing wordpress global variable
 		global $wpdb;
 
@@ -22,7 +22,7 @@
 		$tbl_wallet = CP_WALLETS;
 		$tbl_transac = CP_TRANSACTION;
 		$tbl_currencies = CP_CURRENCIES;
-	
+
 		//Database table creation for configs
 		if($wpdb->get_var( "SHOW TABLES LIKE '$tbl_confg'" ) != $tbl_confg) {
 			$sql = "CREATE TABLE `".$tbl_confg."` (";
@@ -59,6 +59,7 @@
 				$sql .= "  `recipient` varchar(255) NOT NULL, ";
 				$sql .= "  `amount` decimal(20,2) NOT NULL, ";
 				$sql .= "  `prevhash` varchar(255) NOT NULL, ";
+				$sql .= "  `currency` varchar(255) NOT NULL, ";
 				$sql .= "  `curhash` varchar(255) NOT NULL, ";
 				$sql .= "  `date_created` datetime DEFAULT current_timestamp(), ";
 				$sql .= "PRIMARY KEY (`ID`) ";
@@ -74,6 +75,7 @@
 				$sql .= "  `title` varchar(50) NOT NULL COMMENT 'Name of Currency', ";
 				$sql .= "  `info` varchar(255) NOT NULL COMMENT 'Description', ";
 				$sql .= "  `abbrev` varchar(3) NOT NULL DEFAULT 'CPC' COMMENT 'Abbreviation', ";
+				$sql .= "   `status` enum('1','0') NOT NULL, ";
 				$sql .= "  `exchange` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Exchange rate: CPC=1', ";
 				$sql .= "  `created_by` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Created the Currency', ";
 				$sql .= " `date_created` datetime DEFAULT current_timestamp() COMMENT 'Date of currency creation', ";
@@ -99,11 +101,11 @@
 		}
 
 		$check_admin = get_user_meta(1, 'wp_capabilities');
-		
+
 		foreach ($check_admin as $key => $value) {
 		   $verify = $value['administrator'];
 		}
-		
+
 		if ($verify == true) {
 			$wpdb->query(" INSERT INTO cp_currencies  (ID, hash_id, title, info, abbrev, exchange, created_by) VALUES (1, SHA2( '1' , 256), 'Control', 'Origin', 'CTR', '1', '1' );
 			");
