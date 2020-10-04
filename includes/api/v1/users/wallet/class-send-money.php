@@ -104,13 +104,22 @@
                 }
             }
 
+            // Check if public key is valid
+            $check_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE public_key = %s ", $user["recipient"] ));
+            if (!$check_recipient) {
+                return array(
+                    "status" => "failed",
+                    "message" => "Unknown public key of recipient."
+                );
+            }
+            // End
+
             // Step 8: Verify role
             if ( $verify_role == 'administrator' && $verify_role_status == true ) {
                 // THIS SCRIPT WILL RUN IF WPID ADMIN
 
                 // Step 9: SELECTING PUBLIC KEY OF USER AND RECIPIENT
                 $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
-                $get_id_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
                 if (!$get_id_sender  ) {
                     return array(
                         "status" => "failed",
@@ -118,15 +127,8 @@
                     );
                 }
 
-                if (!$get_id_recipient  ) {
-                    return array(
-                        "status" => "failed",
-                        "message" => "You must have wallet first.",
-                    );
-                }
 
-
-                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash`, `currency`) VALUES ( '$get_id_sender->public_key', '$get_id_recipient->public_key', '{$user["amount"]}', 'xyz', 'wasd', '{$user["currency"]}' )  ");
+                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash`, `currency`) VALUES ( '$get_id_sender->public_key', '{$user["recipient"]}', '{$user["amount"]}', 'xyz', 'wasd', '{$user["currency"]}' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
@@ -165,15 +167,8 @@
 
                 // Step 12: SELECTING PUBLIC KEY OF USER AND RECIPIENT
                 $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["sender"] ));
-                $get_id_recipient = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d ", $user["recipient"] ));
-                if (!$get_id_sender  ) {
-                    return array(
-                        "status" => "failed",
-                        "message" => "You must have wallet first.",
-                    );
-                }
 
-                if (!$get_id_recipient  ) {
+                if (!$get_id_sender  ) {
                     return array(
                         "status" => "failed",
                         "message" => "You must have wallet first.",
@@ -208,7 +203,7 @@
                 }
 
                 // Step 13: Executing of transaction
-                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `currency` ) VALUES ( '$get_id_sender->public_key', '$get_id_recipient->public_key', '{$user["amount"]}', '{$user["currency"]}' )  ");
+                $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `currency` ) VALUES ( '$get_id_sender->public_key', '{$user["recipient"]}', '{$user["amount"]}', '{$user["currency"]}' )  ");
                 $get_money_id = $wpdb->insert_id;
 
                 $get_money_data = $wpdb->get_row("SELECT * FROM cp_transaction WHERE ID = $get_money_id");
