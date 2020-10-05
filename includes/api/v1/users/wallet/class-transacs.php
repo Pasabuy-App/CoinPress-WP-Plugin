@@ -41,13 +41,13 @@
             }
 
             // Step 2: Validate user
-           if ( DV_Verification::is_verified() == false ) {
+           /* if ( DV_Verification::is_verified() == false ) {
                 return array(
                     "status" => "unknown",
                     "message" => "Please contact your administrator. Verification issue!",
                 );
             }
-
+ */
             // Get public key of current user
             $get_key = $wpdb->get_row($wpdb->prepare("SELECT public_key FROM cp_wallets WHERE wpid = %d", $_POST['wpid']));
 
@@ -61,6 +61,7 @@
             $sql = "";
 
             if (isset($_POST['query'])) {
+
                 if (empty($_POST['query'])) {
                     return array(
                         "status" => "failed",
@@ -79,11 +80,11 @@
 
                 switch ($_POST['query']) {
                     case 'send':
-                        $sql = " SELECT hash_id, sender, recipient, amount, date_created, currency FROM cp_transaction WHERE sender = '$get_key->public_key'  ";
+                        $sql = " SELECT hash_id, remarks, sender, recipient, amount, date_created, currency, null as avatar, null as `name` FROM cp_transaction WHERE sender = '$get_key->public_key'  ";
                         break;
 
                     case 'receive':
-                        $sql = " SELECT hash_id, sender, recipient, amount, date_created, currency FROM cp_transaction WHERE recipient = '$get_key->public_key'  ";
+                        $sql = " SELECT hash_id, remarks, sender, recipient, amount, date_created, currency, null as avatar, null as `name` FROM cp_transaction WHERE recipient = '$get_key->public_key'  ";
 
                         break;
                 }
@@ -107,15 +108,41 @@
                     );
                 }
 
-                $sql = " SELECT hash_id, sender, recipient, amount, date_created, currency FROM cp_transaction WHERE sender = '$get_key->public_key' OR  recipient = '$get_key->public_key'  ";
+                $sql = " SELECT hash_id, remarks, sender, recipient, amount, date_created, currency, null as avatar, null as `name` FROM cp_transaction WHERE sender = '$get_key->public_key' OR  recipient = '$get_key->public_key'  ";
 
             }else{
 
-                $sql = " SELECT hash_id, sender, recipient, amount, date_created, currency FROM cp_transaction  ";
+                $sql = " SELECT hash_id, remarks, sender, recipient, amount, date_created, currency, null as avatar, null as `name`, null as `type` FROM cp_transaction  ";
 
             }
 
             $results = $wpdb->get_results($sql);
+            foreach ($results as $key => $value) {
+
+                if ($value->sender !== $get_key->public_key) {
+
+                    $get_avatar = $wpdb->get_row("SELECT IF((SELECT meta_value FROM wp_usermeta WHERE meta_key = 'avatar' AND `user_id` = cw.wpid ) is null, 'https://pasabuy.app/wp-content/uploads/2020/10/default-avatar.png',
+                    (SELECT meta_value FROM wp_usermeta WHERE meta_key = 'avatar' AND `user_id` = cw.wpid ) ) as avatar FROM cp_wallets cw WHERE public_key =  '$value->sender'");
+                    $value->avatar = $get_avatar->avatar;
+
+                    $get_display_name = $wpdb->get_row("SELECT (SELECT display_name FROM wp_users WHERE ID = cw.wpid) as `name` FROM cp_wallets cw WHERE public_key =  '$value->sender'");
+                    $value->name = $get_display_name->name;
+
+                    $value->type = 'recipient';
+                }
+
+                if ($value->recipient !== $get_key->public_key) {
+
+                    $get_avatar = $wpdb->get_row("SELECT IF((SELECT meta_value FROM wp_usermeta WHERE meta_key = 'avatar' AND `user_id` = cw.wpid ) is null, 'https://pasabuy.app/wp-content/uploads/2020/10/default-avatar.png',
+                    (SELECT meta_value FROM wp_usermeta WHERE meta_key = 'avatar' AND `user_id` = cw.wpid ) ) as avatar FROM cp_wallets cw WHERE public_key =  '$value->sender'");
+                    $value->avatar = $get_avatar->avatar;
+
+                    $get_display_name = $wpdb->get_row("SELECT (SELECT display_name FROM wp_users WHERE ID = cw.wpid) as `name` FROM cp_wallets cw WHERE public_key =  '$value->sender'");
+                    $value->name = $get_display_name->name;
+
+                    $value->type = 'sender';
+                }
+            }
 
             return array(
                 "status" => "success",

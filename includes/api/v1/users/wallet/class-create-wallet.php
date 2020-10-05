@@ -98,7 +98,7 @@
                         "message" => "This currencies does not exists.",
                     );
                 }
-                return $check_currency;
+
 
                 $check_user_wallets = $wpdb->get_results("SELECT * FROM cp_wallets WHERE wpid = $user_id ");
                 $check = array();
@@ -106,7 +106,7 @@
                 for ($count=0; $count < count($check_user_wallets) ; $count++) {
                     $check[] = $check_user_wallets[$count]->currency;
 
-                    if (in_array($check_user_wallets[$count]->currency, (array)$currency ) ) {
+                    if (in_array($check_user_wallets[$count]->currency, (array)$check_currency->ID ) ) {
                         return array(
                             "status" => "exists",
                             "message" => "This user wallet currency is already exists.",
