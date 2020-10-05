@@ -92,7 +92,7 @@
                     if (in_array($check_user_wallets[$count]->currency, (array)$currency ) ) {
                         return array(
                             "status" => "success",
-                            "message" => "This user wallet is already exists.",
+                            "message" => "This user wallet currency is already exists.",
                         );
                     }
                 }
