@@ -58,6 +58,7 @@
 				$sql .= "  `sender` varchar(255) NOT NULL, ";
 				$sql .= "  `recipient` varchar(255) NOT NULL, ";
 				$sql .= "  `amount` decimal(20,2) NOT NULL, ";
+				$sql .= "  `remarks` varchar(255)  NOT NULL DEFAULT 'None' COMMENT 'Live/Hiden', ";
 				$sql .= "  `prevhash` varchar(255) NOT NULL, ";
 				$sql .= "  `currency` varchar(255) NOT NULL, ";
 				$sql .= "  `curhash` varchar(255) NOT NULL, ";
