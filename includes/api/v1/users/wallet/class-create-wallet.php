@@ -91,8 +91,9 @@
 
                     if (in_array($check_user_wallets[$count]->currency, (array)$currency ) ) {
                         return array(
-                            "status" => "success",
+                            "status" => "exists",
                             "message" => "This user wallet currency is already exists.",
+                            "data" => $check_user_wallets->public_key
                         );
                     }
                 }
