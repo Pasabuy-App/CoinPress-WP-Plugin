@@ -34,15 +34,15 @@
             }
 
             // Step 2: Validate user
-            /* if ( DV_Verification::is_verified() == false ) {
+            if ( DV_Verification::is_verified() == false ) {
                 return array(
                     "status" => "unknown",
                     "message" => "Please contact your administrator. Verification issue!",
                 );
-            } */
+            }
 
             // Step 3: Check if required parameters are passed
-            if (!isset($_POST['currency'])) {
+            if (!isset($_POST['query'])) {
                 return array(
                     "status" => "unknown",
                     "message" => "Please contact your administrator. Request unknwon!",
@@ -50,38 +50,55 @@
             }
 
             // Step 4: Check if parameters passed are empty
-            if (empty($_POST['currency'])) {
+            if (empty($_POST['query'])) {
                 return array(
                     "status" => "failed",
                     "message" => "Required fields cannot be empty.",
                 );
             }
 
-            // Step 5: Validate currency
-            if ($_POST['currency'] === '1') {
-                return array(
-                    "status" => "failed",
-                    "message" => "This currency is not available.",
-                );
-            }
 
             $date = CP_Globals::date_stamp();
 
             $table_wallet = CP_WALLETS;
             $table_wallet_fields = CP_WALLETS_FIELDS;
             $user_id = $_POST['wpid'];
-            $currency = $_POST['currency'];
+            $currency = $_POST['query'];
 
             // Step 6: Start mysql transaction
             $wpdb->query("START TRANSACTION");
 
-                $check_currency = $wpdb->get_row("SELECT ID FROM cp_currencies WHERE ID = '$currency' ");
+                // Step 5: Validate currency
+                switch ($currency) {
+                    case strlen($currency) == 3:
+                        if (strlen($currency) !== 3) {
+                            return array(
+                                "status" => "failed",
+                                "message" => "Invalid value of abbreviation."
+                            );
+                        }
+                        if ($currency == 'CTR') {
+                            return array(
+                                "status" => "failed",
+                                "message" => "This currency is unavailable."
+                            );
+                        }
+                        $check_currency = $wpdb->get_row("SELECT ID FROM cp_currencies WHERE abbrev = '$currency' ");
+                        break;
+
+                    default:
+                        $check_currency = $wpdb->get_row("SELECT ID FROM cp_currencies WHERE hash_id = '$currency' ");
+                        break;
+
+                }
+
                 if (!$check_currency) {
                     return array(
-                        "status" => "success",
+                        "status" => "failed",
                         "message" => "This currencies does not exists.",
                     );
                 }
+                return $check_currency;
 
                 $check_user_wallets = $wpdb->get_results("SELECT * FROM cp_wallets WHERE wpid = $user_id ");
                 $check = array();
