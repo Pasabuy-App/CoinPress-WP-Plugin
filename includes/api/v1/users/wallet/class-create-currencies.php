@@ -77,7 +77,7 @@
             $check_title_if_existed = $wpdb->query(" SELECT title  FROM cp_currencies WHERE title REGEXP '^$title' ");
             if ($check_title_if_existed > 0) {
                 return array(
-                    "status" => "success",
+                    "status" => "failed",
                     "message" => "Title is already exists."
                 );
             }
@@ -85,7 +85,7 @@
             $check_abbrev_if_existed = $wpdb->query(" SELECT abbrev FROM cp_currencies WHERE abbrev REGEXP '^$abbrev' ");
             if ($check_abbrev_if_existed > 0 ) {
                 return array(
-                    "status" => "success",
+                    "status" => "failed",
                     "message" => "Abbrev is already exists."
                 );
             }
