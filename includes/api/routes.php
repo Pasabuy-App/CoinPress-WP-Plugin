@@ -22,6 +22,7 @@
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-select-balance.php'; // Example
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-listing.php'; // Example
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-transacs.php'; // Example
+    require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-select-wallet.php'; // Example
 
     // global
     require plugin_dir_path(__FILE__) . '/v1/class-globals.php'; // Example
@@ -33,6 +34,11 @@
         /*
          *  WALLET RESTAPI
         */
+            register_rest_route( 'coinpress/v1/user/wallet', 'select', array(
+                'methods' => 'POST',
+                'callback' => array('CP_Select_wallet','listen'),
+            ));
+
             register_rest_route( 'coinpress/v1/user/wallet', 'send', array(
                 'methods' => 'POST',
                 'callback' => array('CP_User_Send_Money','listen'),

@@ -12,26 +12,14 @@
 	class CP_Select_Balance {
 
         public static function listen(){
-            return rest_ensure_response( 
+            return rest_ensure_response(
                 self::listen_open()
             );
         }
-    
+
         public static function listen_open(){
             global $wpdb;
 
-            // Step 1: Validate user
-            if ( DV_Verification::is_verified() == false ) {
-                return rest_ensure_response( 
-                    array(
-                        "status" => "unknown",
-                        "message" => "Please contact your administrator. Verification Issue!",
-                    )
-                );
-            }
-
-            global $wpdb;
-            
             // Step 1: Check if prerequisites plugin are missing
             $plugin = CP_Globals::verify_prerequisites();
             if ($plugin !== true) {
@@ -64,7 +52,7 @@
                     "message" => "Required fields cannot be empty.",
                 );
             }
-            
+
             // Step 5: Validate abbrevation length
             if (strlen($_POST['type']) != 3) {
                 return array(
@@ -80,7 +68,14 @@
 
             if (!$get_currency) {
                 return array(
-                    "status" => "success",
+                    "status" => "failed",
+                    "message" => "This currency does not exists.",
+                );
+            }
+
+            if (!$get_key) {
+                return array(
+                    "status" => "failed",
                     "message" => "This currency does not exists.",
                 );
             }
@@ -94,11 +89,11 @@
 
             // Step 7: Start mysql transaction
             $result = $wpdb->get_row(
-                $wpdb->prepare(" SELECT 
-                    COALESCE(  
-                        SUM(COALESCE( CASE WHEN recipient = '%s' THEN amount END , 0 ))  -  
+                $wpdb->prepare(" SELECT
+                    COALESCE(
+                        SUM(COALESCE( CASE WHEN recipient = '%s' THEN amount END , 0 ))  -
                         SUM(COALESCE( CASE WHEN sender = '%s' THEN amount END, 0 ))
-                        , 0 ) as balance 
+                        , 0 ) as balance
                         FROM	cp_transaction", $get_key->public_key, $get_key->public_key));
 
             // Step 8: Check if no rows found
@@ -112,7 +107,7 @@
             // Step 9: Return result
                 return array(
                     "status"  => "success",
-                    "data" => $result
+                    "data" => $result->balance
                 );
             }
         }

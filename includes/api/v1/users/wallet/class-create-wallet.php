@@ -136,7 +136,6 @@
                 $wpdb->query("COMMIT");
                 return array(
                     "status" => "success",
-                    "message" => "Data has been submitted successfully.",
                     "data" => $get_publicKey->public_key
                 );
             }
