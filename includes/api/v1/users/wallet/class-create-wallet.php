@@ -83,11 +83,11 @@
                                 "message" => "This currency is unavailable."
                             );
                         }
-                        $check_currency = $wpdb->get_row("SELECT ID FROM cp_currencies WHERE abbrev = '$currency' ");
+                        $check_currency = $wpdb->get_row("SELECT ID, hash_id FROM cp_currencies WHERE abbrev = '$currency' ");
                         break;
 
                     default:
-                        $check_currency = $wpdb->get_row("SELECT ID FROM cp_currencies WHERE hash_id = '$currency' ");
+                        $check_currency = $wpdb->get_row("SELECT ID, hash_id FROM cp_currencies WHERE hash_id = '$currency' ");
                         break;
 
                 }
@@ -136,7 +136,10 @@
                 $wpdb->query("COMMIT");
                 return array(
                     "status" => "success",
-                    "data" => $get_publicKey->public_key
+                    "data" => array (array(
+                        "public_key" => $get_publicKey->public_key,
+                        "currency_id" => $check_currency->hash_id
+                    ))
                 );
             }
         }
