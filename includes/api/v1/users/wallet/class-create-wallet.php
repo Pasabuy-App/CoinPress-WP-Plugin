@@ -116,13 +116,14 @@
                 }
 
             // Step 7: Insert wallet
-            $user_wallet = $wpdb->query(" INSERT INTO cp_wallets ( wpid, currency) VALUES ( '$user_id', '$currency' )  ");
+            $user_wallet = $wpdb->query(" INSERT INTO cp_wallets ( wpid, currency) VALUES ( '$user_id', '$check_currency->ID' )  ");
             $wallet_id = $wpdb->insert_id;
 
             $public_key = CP_Globals::update_public_key_hash($wallet_id, 'cp_wallets');
 
             $update_hash_id = $wpdb->query("UPDATE cp_wallets SET hash_id = SHA2( '$wallet_id' , 256)  WHERE ID =  $wallet_id  ");
 
+            $get_publicKey = $wpdb->get_row("SELECT public_key FROM cp_wallets WHERE ID = '$wallet_id'");
             // Step 8: Check if any queries above failed
             if ($user_wallet < 1 ||  $public_key == false || $update_hash_id < 1 ) {
                 $wpdb->query("ROLLBCK");
@@ -135,7 +136,8 @@
                 $wpdb->query("COMMIT");
                 return array(
                     "status" => "success",
-                    "message" => "Data has been submitted successfully."
+                    "message" => "Data has been submitted successfully.",
+                    "data" => $get_publicKey->public_key
                 );
             }
         }
