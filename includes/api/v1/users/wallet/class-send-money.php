@@ -78,6 +78,15 @@
             // insering currency
             $check_currency = $wpdb->get_row("SELECT * FROM cp_currencies WHERE hash_id = '{$user["currency"]}'");
 
+            $check_wallet = $wpdb->get_row("SELECT * FROM cp_wallets WHERE public_key = '{$_POST["recipient"]}' ");
+
+            if ($check_currency->ID != $check_wallet->currency ) {
+                return array(
+                    "status" => "failed",
+                    "message" => "This recipient wallet is ".$check_currency->title." wallet.",
+                );
+            }
+
             if (empty($check_currency)) {
                 return array(
                     "status" => "failed",
@@ -126,6 +135,8 @@
                         "message" => "You must have wallet first.",
                     );
                 }
+
+                
 
 
                 $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash`, `currency`) VALUES ( '$get_id_sender->public_key', '{$user["recipient"]}', '{$user["amount"]}', 'xyz', 'wasd', '{$user["currency"]}' )  ");
