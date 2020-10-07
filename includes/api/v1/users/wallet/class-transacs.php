@@ -154,7 +154,7 @@
 				}
 
 				$lastid = $_POST['lid'];
-				$sql .= " AND post.id < $lastid ";
+				$sql .= " AND ID < $lastid ";
 				$limit = 7;
 
             }

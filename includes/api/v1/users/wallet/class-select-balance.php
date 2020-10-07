@@ -82,8 +82,10 @@
 
             if ( $get_key->currency !==  $get_currency->ID   ) {
                 return array(
-                    "status" => "failed",
-                    "message" => "You dont have ".$get_currency->title." wallet.",
+                    // "status" => "failed",
+                    // "message" => "You dont have ".$get_currency->title." wallet.",
+                    "status"  => "success",
+                    "balance" => "0.00"
                 );
             }
 
@@ -107,7 +109,7 @@
             // Step 9: Return result
                 return array(
                     "status"  => "success",
-                    "data" => $result->balance
+                    "balance" => $result->balance
                 );
             }
         }

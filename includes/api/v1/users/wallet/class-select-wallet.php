@@ -66,12 +66,12 @@
 
             return array(
                 "status" => "success",
-                "data" => array(
+                "data" => array(array(
                     'public_key' => $data->public_key,
                     'avatar' => $data->avatar == null? SP_PLUGIN_URL . "assets/default-avatar.png" : $data->avatar ,
                     'name' => $data->name,
                     'currency' => $data->currency,
-                )
+                ))
             );
         }
     }
