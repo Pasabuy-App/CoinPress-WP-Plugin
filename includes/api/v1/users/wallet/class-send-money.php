@@ -31,12 +31,12 @@
             }
 
             // Step 2: Validate user
-            /* if ( DV_Verification::is_verified() == false ) {
+            if ( DV_Verification::is_verified() == false ) {
                 return array(
                     "status" => "unknown",
                     "message" => "Please contact your administrator. Verification issue!",
                 );
-            } */
+            } 
 
 
             // Step 3: Check if required parameters are passed

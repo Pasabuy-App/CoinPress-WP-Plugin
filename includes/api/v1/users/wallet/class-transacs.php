@@ -41,13 +41,13 @@
             }
 
             // Step 2: Validate user
-           /* if ( DV_Verification::is_verified() == false ) {
+            if ( DV_Verification::is_verified() == false ) {
                 return array(
                     "status" => "unknown",
                     "message" => "Please contact your administrator. Verification issue!",
                 );
             }
- */
+ 
             // Get public key of current user
             $get_key = $wpdb->get_row($wpdb->prepare("SELECT public_key FROM cp_wallets WHERE wpid = %d", $_POST['wpid']));
 
