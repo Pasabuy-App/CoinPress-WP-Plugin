@@ -136,7 +136,7 @@
             }
 
 
-			$limit = 12;
+			$limit = " 12 OFFSET 0";
 
 			if( isset($_POST['lid']) ){
 				// Step 4: Validate parameter
@@ -154,14 +154,14 @@
 				}
 
 				$lastid = $_POST['lid'];
-				$sql .= " AND ID < $lastid ";
-				$limit = 7;
+				//$sql .= " AND ID < $lastid ";
+				$limit = " 7 OFFSET $lastid ";
 
             }
 
-             $sql .= " ORDER BY ID LIMIT $limit   ";
+             $sql .= " ORDER BY ID DESC LIMIT $limit   ";
 
-
+            
             $results = $wpdb->get_results($sql);
             foreach ($results as $key => $value) {
 
