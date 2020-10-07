@@ -141,7 +141,7 @@
 
                 if (isset($_POST['remarks'])) {
                     if ($_POST['remarks'] !== null) {
-                        $reamarks = $wpdb->query("INSERT INTO cp_transaction (`remarks`) VALUES ( '{$_POST["remarks"]}' )  ");
+                        $reamarks = $wpdb->query("UPDATE  cp_transaction  SET `remarks` = '{$_POST["remarks"]}' WHERE ID = '$get_money_id'  ");
                         if ($reamarks  == false ) {
                             $wpdb->query("ROLLBACK");
                             return array(
@@ -224,6 +224,19 @@
                 $hash_prevhash = hash( 'sha256', $master_key. $get_money_data->date_created );
 
                 $update_transaction = $wpdb->query("UPDATE cp_transaction SET `curhash` = '$hash', `prevhash` = '$hash_prevhash', `hash_id` = SHA2( '$get_money_id' , 256) WHERE ID = $get_money_id ");
+
+                if (isset($_POST['remarks'])) {
+                    if ($_POST['remarks'] !== null) {
+                        $reamarks = $wpdb->query("UPDATE  cp_transaction  SET `remarks` = '{$_POST["remarks"]}' WHERE ID = '$get_money_id'  ");
+                        if ($reamarks  == false ) {
+                            $wpdb->query("ROLLBACK");
+                            return array(
+                                "status" => "failed",
+                                "message" => "An error occured while submiting data to server."
+                            );
+                        }
+                    }
+                }
 
                 // Step 15: Check if any queries above failed
                 if ( $send_money < 1 || $get_money_id < 1 || empty($get_money_data) || $update_transaction < 1 ) {
