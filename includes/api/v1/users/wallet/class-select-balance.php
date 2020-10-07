@@ -90,7 +90,7 @@
                     "balance" => "0.00"
                 );
             }
-            return $get_key->public_key;
+           
             // Step 7: Start mysql transaction
             $result = $wpdb->get_row(
                 $wpdb->prepare(" SELECT
