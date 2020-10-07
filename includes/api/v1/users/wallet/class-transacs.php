@@ -78,13 +78,26 @@
 
                 $query = $_POST['query'];
 
+                $sql = " SELECT
+                    hash_id,
+                    remarks,
+                    sender,
+                    recipient,
+                    amount,
+                    date_created,
+                    currency,
+                    null as avatar,
+                    null as `name`
+                FROM cp_transaction ";
+
+
                 switch ($_POST['query']) {
                     case 'send':
-                        $sql = " SELECT hash_id, remarks, sender, recipient, amount, date_created, currency, null as avatar, null as `name` FROM cp_transaction WHERE sender = '$get_key->public_key'  ";
+                        $sql .= " WHERE sender = '$get_key->public_key'  ";
                         break;
 
                     case 'receive':
-                        $sql = " SELECT hash_id, remarks, sender, recipient, amount, date_created, currency, null as avatar, null as `name` FROM cp_transaction WHERE recipient = '$get_key->public_key'  ";
+                        $sql .= " WHERE recipient = '$get_key->public_key'  ";
 
                         break;
                 }
@@ -111,10 +124,43 @@
                 $sql = " SELECT hash_id, remarks, sender, recipient, amount, date_created, currency, null as avatar, null as `name` FROM cp_transaction WHERE sender = '$get_key->public_key' OR  recipient = '$get_key->public_key'  ";
 
             }else{
-
-                $sql = " SELECT hash_id, remarks, sender, recipient, amount, date_created, currency, null as avatar, null as `name`, null as `type` FROM cp_transaction  ";
+                $sql = " SELECT hash_id, remarks, sender, recipient, amount, date_created, currency, null as avatar, null as `name` FROM cp_transaction WHERE sender = '$get_key->public_key' OR  recipient = '$get_key->public_key'  ";
 
             }
+
+            if (isset($_POST["cy"])) {
+                if ($_POST["cy"] != null) {
+                    $cy = $_POST["cy"];
+                    $sql .= " HAVING  currency = '$cy' ";
+                }
+            }
+
+
+			$limit = 12;
+
+			if( isset($_POST['lid']) ){
+				// Step 4: Validate parameter
+                if (empty($_POST['lid']) ) {
+                    return array(
+                        "status" => "failed",
+                        "message" => "Required fields cannot be empty.",
+                    );
+                }
+				if ( !is_numeric($_POST["lid"])) {
+					return array(
+						"status" => "failed",
+						"message" => "Parameters not in valid format.",
+					);
+				}
+
+				$lastid = $_POST['lid'];
+				$sql .= " AND post.id < $lastid ";
+				$limit = 7;
+
+            }
+
+             $sql .= " ORDER BY ID LIMIT $limit   ";
+
 
             $results = $wpdb->get_results($sql);
             foreach ($results as $key => $value) {
@@ -137,7 +183,7 @@
                     (SELECT meta_value FROM wp_usermeta WHERE meta_key = 'avatar' AND `user_id` = cw.wpid ) ) as avatar FROM cp_wallets cw WHERE public_key =  '$value->sender'");
                     $value->avatar = $get_avatar->avatar;
 
-                    $get_display_name = $wpdb->get_row("SELECT (SELECT display_name FROM wp_users WHERE ID = cw.wpid) as `name` FROM cp_wallets cw WHERE public_key =  '$value->sender'");
+                    $get_display_name = $wpdb->get_row("SELECT (SELECT display_name FROM wp_users WHERE ID = cw.wpid) as `name` FROM cp_wallets cw WHERE public_key =  '$value->recipient'");
                     $value->name = $get_display_name->name;
 
                     $value->type = 'sender';
