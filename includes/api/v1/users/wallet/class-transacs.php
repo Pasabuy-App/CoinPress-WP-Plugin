@@ -47,9 +47,11 @@
                     "message" => "Please contact your administrator. Verification issue!",
                 );
             }
- 
+            
+            $check_currency = $wpdb->get_row("SELECT * FROM cp_currencies WHERE hash_id = '".$_POST['cy']."'");
+
             // Get public key of current user
-            $get_key = $wpdb->get_row($wpdb->prepare("SELECT public_key FROM cp_wallets WHERE wpid = %d", $_POST['wpid']));
+            $get_key = $wpdb->get_row($wpdb->prepare("SELECT public_key FROM cp_wallets WHERE wpid = %d AND currency = %s", $_POST['wpid'], $check_currency->ID ));
 
             if (!$get_key) {
                 return array(
