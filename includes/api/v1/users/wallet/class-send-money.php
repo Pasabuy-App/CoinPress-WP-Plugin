@@ -31,13 +31,13 @@
             }
 
             // Step 2: Validate user
-            if ( DV_Verification::is_verified() == false ) {
+         /*    if ( DV_Verification::is_verified() == false ) {
                 return array(
                     "status" => "unknown",
                     "message" => "Please contact your administrator. Verification issue!",
                 );
-            } 
-
+            }
+ */
 
             // Step 3: Check if required parameters are passed
             if (!isset($_POST['recipient']) || !isset($_POST['amount'])) {
@@ -130,6 +130,15 @@
             if ( $verify_role == 'administrator' && $verify_role_status == true ) {
                 // THIS SCRIPT WILL RUN IF WPID ADMIN
 
+                $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d AND currency = %d ", $user["sender"], $check_currency->ID  ));
+
+                if (!$get_id_sender  ) {
+                    return array(
+                        "status" => "failed",
+                        "message" => "You must have wallet first.",
+                    );
+                }
+
                 // // Step 9: SELECTING PUBLIC KEY OF USER AND RECIPIENT
 
                 $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash`, `currency`) VALUES ( '$get_id_sender->public_key', '{$user["recipient"]}', '{$user["amount"]}', 'xyz', 'wasd', '{$user["currency"]}' )  ");
@@ -176,7 +185,7 @@
                 // THIS SCRIPT WILL RUN IF WPID IS NOT USER
 
                 /**
-                    Verifying Balance of user before executing transaction
+                *   Verifying Balance of user before executing transaction
                 */
 
                 // Step 12: SELECTING PUBLIC KEY OF USER AND RECIPIENT
@@ -215,7 +224,7 @@
                         "message" => "Your balance is lower than the amount that your sending",
                     );
                 }
-                
+
                 // Step 13: Executing of transaction
                 $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `currency` ) VALUES ( '$get_id_sender->public_key', '{$user["recipient"]}', '{$user["amount"]}', '{$user["currency"]}' )  ");
                 $get_money_id = $wpdb->insert_id;
