@@ -130,15 +130,7 @@
             if ( $verify_role == 'administrator' && $verify_role_status == true ) {
                 // THIS SCRIPT WILL RUN IF WPID ADMIN
 
-                // Step 9: SELECTING PUBLIC KEY OF USER AND RECIPIENT
-                $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d AND currency = %d ", $user["sender"], $check_currency->ID  ));
-                if (!$get_id_sender  ) {
-                    return array(
-                        "status" => "failed",
-                        "message" => "You must have wallet first.",
-                    );
-                }     
-
+                // // Step 9: SELECTING PUBLIC KEY OF USER AND RECIPIENT
 
                 $send_money = $wpdb->query("INSERT INTO cp_transaction ( `sender`, `recipient`, `amount`, `prevhash`, `curhash`, `currency`) VALUES ( '$get_id_sender->public_key', '{$user["recipient"]}', '{$user["amount"]}', 'xyz', 'wasd', '{$user["currency"]}' )  ");
                 $get_money_id = $wpdb->insert_id;
