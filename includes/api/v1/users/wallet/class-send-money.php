@@ -31,13 +31,13 @@
             }
 
             // Step 2: Validate user
-         /*    if ( DV_Verification::is_verified() == false ) {
+            if ( DV_Verification::is_verified() == false ) {
                 return array(
                     "status" => "unknown",
                     "message" => "Please contact your administrator. Verification issue!",
                 );
             }
- */
+
 
             // Step 3: Check if required parameters are passed
             if (!isset($_POST['recipient']) || !isset($_POST['amount'])) {
@@ -71,9 +71,28 @@
                 );
             }
 
+            $get_max_ammount = CP_Library_Config::dv_get_config('maximum_ammount', 1223);
+            $get_min_ammount = CP_Library_Config::dv_get_config('minimum_ammount', 1223);
+
             $master_key = DV_Library_Config::dv_get_config('master_key', 123);
 
             $user = self::catch_post();
+
+            // Check minimum ammount can send
+            if ($_POST['amount'] > $get_min_ammount) {
+                return array(
+                    "status" => "failed",
+                    "message" => "You can only send ".$get_min_ammount." per transaction.",
+                );
+            }
+
+
+            if ($_POST['amount'] > $get_max_ammount) {
+                return array(
+                    "status" => "failed",
+                    "message" => "You can only send ".$get_max_ammount." per day.",
+                );
+            }
 
             // Validating Currency recipient
 

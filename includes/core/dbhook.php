@@ -28,12 +28,15 @@
 			$sql = "CREATE TABLE `".$tbl_confg."` (";
 				$sql .= " `ID` bigint(20) NOT NULL AUTO_INCREMENT, ";
 				$sql .= " `hash_id` varchar(255) NOT NULL COMMENT 'Config Description', ";
-				$sql .= " `config_desc` varchar(255) NOT NULL COMMENT 'Config Description', ";
+				$sql .= " `title` varchar(255) NOT NULL COMMENT 'Config Description', ";
+				$sql .= " `info` varchar(255) NOT NULL COMMENT 'Config Description', ";
 				$sql .= " `config_key` varchar(50) NOT NULL COMMENT 'Config KEY', ";
 				$sql .= " `config_value` bigint(20) NOT NULL DEFAULT 0 COMMENT 'Config VALUES', ";
 				$sql .= "PRIMARY KEY (`ID`) ";
 				$sql .= ") ENGINE = InnoDB; ";
 			$result = $wpdb->get_results($sql);
+			$wpdb->query(" INSERT INTO $tbl_confg  (ID, hash_id, title, info, config_key, config_value) VALUES (1, sha2('1', 256), 'Maximum ammount of money transaction', 'This config is the maximum ammount that user can send money to other user', 'maximum_ammount', '1' );");
+			$wpdb->query(" INSERT INTO $tbl_confg  (ID, hash_id, title, info, config_key, config_value) VALUES (2, sha2('2', 256), 'Minimum ammount of money transaction', 'This config is the minimmum ammount that user can send money to other user', 'minimum_ammount', '2' );");
 		}
 
 		//Database table creation for wallet
@@ -83,6 +86,8 @@
 				$sql .= "PRIMARY KEY (`ID`) ";
 				$sql .= ") ENGINE = InnoDB ; ";
 			$result = $wpdb->get_results($sql);
+
+			$wpdb->query(" INSERT INTO $tbl_currencies  (ID, hash_id, title, info, abbrev, exchange, created_by) VALUES (1, SHA2( '1' , 256), 'Control', 'Origin', 'CTR', '1', '1' );");
 		}
 
 		//Database table creation for revisions
@@ -99,44 +104,9 @@
 				$sql .= "PRIMARY KEY (`ID`) ";
 				$sql .= ") ENGINE = InnoDB; ";
 			$result = $wpdb->get_results($sql);
+
+			$wpdb->query(" INSERT INTO $tbl_revs  (ID, hash_id, revs_type, parent_id, child_key, child_val, created_by) VALUES (ID, sha2(1, 256), 'configs', '1', 'maximum_ammount', '10000', '1' );");
+			$wpdb->query(" INSERT INTO $tbl_revs  (ID, hash_id, revs_type, parent_id, child_key, child_val, created_by) VALUES (ID, sha2(2, 256), 'configs', '2', 'minimum_ammount', '25000', '2' );");
 		}
-
-		$check_admin = get_user_meta(1, 'wp_capabilities');
-
-		foreach ($check_admin as $key => $value) {
-		   $verify = $value['administrator'];
-		}
-
-		if ($verify == true) {
-			$wpdb->query(" INSERT INTO cp_currencies  (ID, hash_id, title, info, abbrev, exchange, created_by) VALUES (1, SHA2( '1' , 256), 'Control', 'Origin', 'CTR', '1', '1' );
-			");
-
-			// $wpdb->query("  INSERT INTO cp_wallets (ID, wpid, currency) VALUES  (1, 1, 1 )");
-
-			// $wpdb->query("UPDATE $tbl_wallet SET public_key = concat(
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(1)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),
-			// 	substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed)*36+1, 1)
-			//   ), hash_id = SHA2( '1' , 256)
-			//   WHERE ID = 1;");
-		}
-
 	}
 	add_action( 'activated_plugin', 'cp_dbhook_activate');

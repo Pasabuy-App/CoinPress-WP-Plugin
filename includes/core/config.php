@@ -20,7 +20,8 @@
 	define('CP_CURRENCIES_FIELDS', '(`title`, `info`, `abbrev`, `exchange`, `created_by`)');
 
 	define('CP_REVS', CP_PREFIX.'revisions');
-	
+	define('CP_REVS_FIELD', 'hash_id, revs_type, parent_id, child_key, child_val, created_by' );
+
 	define('CP_WALLETS', CP_PREFIX.'wallets');
 	define('CP_WALLETS_FIELDS', '( `wpid`, `currency`, `curhash`, `public_key`, `date_created` )');
 
