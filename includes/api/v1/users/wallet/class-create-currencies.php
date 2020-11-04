@@ -72,7 +72,7 @@
             $wpid       = $user['wpid'];
 
             /**
-               Step 6: Validating title if already existed
+             *  Step 6: Validating title if already existed
             */
             $check_title_if_existed = $wpdb->query(" SELECT title  FROM cp_currencies WHERE title REGEXP '^$title' ");
             if ($check_title_if_existed > 0) {
@@ -91,7 +91,7 @@
             }
 
             /**
-               Step 7: Start mysql transaction
+            * Step 7: Start mysql transaction
             */
             $wpdb->query("START TRANSACTION");
 

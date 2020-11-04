@@ -24,6 +24,13 @@
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-transacs.php'; // Example
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-select-wallet.php'; // Example
 
+    // Psasabuy pluss
+        require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/class-transactions.php'; // Example
+
+        // Modes
+            require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/modes/class-insert.php'; // Example
+
+
     // global
     require plugin_dir_path(__FILE__) . '/v1/class-globals.php'; // Example
 
@@ -67,6 +74,13 @@
             register_rest_route( 'coinpress/v1/user/transac', 'list', array(
                 'methods' => 'POST',
                 'callback' => array('CP_Transsaction_Listing','listen'),
+            ));
+        /*
+         *  PASABUY PLUSS RESTAPI
+        */
+            register_rest_route( 'coinpress/v1/user/pls/mode', 'insert', array(
+                'methods' => 'POST',
+                'callback' => array('CP_Pasabuy_Pluss_Modes_Insert','listen'),
             ));
     }
     add_action( 'rest_api_init', 'coinpress_route' );
