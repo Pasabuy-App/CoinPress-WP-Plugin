@@ -29,6 +29,7 @@
 
         // Modes
             require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/modes/class-insert.php'; // Example
+            require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/modes/class-listing.php'; // Example
 
 
     // global
@@ -81,6 +82,11 @@
             register_rest_route( 'coinpress/v1/user/pls/mode', 'insert', array(
                 'methods' => 'POST',
                 'callback' => array('CP_Pasabuy_Pluss_Modes_Insert','listen'),
+            ));
+
+            register_rest_route( 'coinpress/v1/user/pls/mode', 'list', array(
+                'methods' => 'POST',
+                'callback' => array('CP_Pasabuy_Pluss_Modes_Listing','listen'),
             ));
     }
     add_action( 'rest_api_init', 'coinpress_route' );

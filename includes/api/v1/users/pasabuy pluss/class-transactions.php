@@ -19,13 +19,13 @@
 
         public static function catch_post(){
             $curl_user = array();
+
             $curl_user['stid'] = $_POST['stid'];
             $curl_user['modes'] = $_POST['modes'];
             isset($_POST['trid']) && !empty($_POST['trid'])? $curl_user['store_id'] =  $_POST['trid'] :  $curl_user['store_id'] = null ;
             $curl_user['odid'] = $_POST['odid'];
-
-
             $curl_user['wpid'] = $_POST['wpid'];
+
             return $curl_user;
         }
 
@@ -39,4 +39,5 @@
 
 
         }
+
     }
