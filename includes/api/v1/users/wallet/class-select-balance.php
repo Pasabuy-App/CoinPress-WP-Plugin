@@ -62,8 +62,8 @@
             }
 
             // Step 6: Validate wallet and currency
-            $get_currency = $wpdb->get_row($wpdb->prepare(" SELECT ID,  title FROM cp_currencies WHERE abbrev = '%s'", $_POST['type']));
-            
+            $get_currency = $wpdb->get_row($wpdb->prepare(" SELECT ID,  title FROM cp_currencies WHERE abbrev LIKE '%%s%'", $_POST['type']));
+
             $get_key = $wpdb->get_row($wpdb->prepare("SELECT public_key, currency FROM cp_wallets WHERE wpid = %d AND currency = '%s' ", $_POST['wpid'], $get_currency->ID));
 
 
@@ -80,7 +80,7 @@
                     "message" => "This currency does not exists.",
                 );
             }
-     
+
 
             if ( $get_key->currency !==  $get_currency->ID   ) {
                 return array(
@@ -90,7 +90,7 @@
                     "balance" => "0.00"
                 );
             }
-           
+
             // Step 7: Start mysql transaction
             $result = $wpdb->get_row(
                 $wpdb->prepare(" SELECT

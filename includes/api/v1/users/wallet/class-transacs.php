@@ -30,6 +30,8 @@
         public static function listen_open(){
 
             global $wpdb;
+            $tbl_wallet = MP_WALLETS_v2;
+            $tbl_store = TP_STORES_v2;
 
             // Step 1: Check if prerequisites plugin are missing
             $plugin = CP_Globals::verify_prerequisites();
@@ -47,7 +49,7 @@
                     "message" => "Please contact your administrator. Verification issue!",
                 );
             }
-            
+
             $check_currency = $wpdb->get_row("SELECT * FROM cp_currencies WHERE hash_id = '".$_POST['cy']."'");
 
             // Get public key of current user
@@ -163,7 +165,7 @@
 
              $sql .= " ORDER BY ID DESC LIMIT $limit   ";
 
-            
+            $smp = array();
             $results = $wpdb->get_results($sql);
             foreach ($results as $key => $value) {
 
@@ -174,9 +176,23 @@
                     $value->avatar = $get_avatar->avatar;
 
                     $get_display_name = $wpdb->get_row("SELECT (SELECT display_name FROM wp_users WHERE ID = cw.wpid) as `name` FROM cp_wallets cw WHERE public_key =  '$value->sender'");
-                    $value->name = $get_display_name->name;
-
+                    if (!empty($get_display_name)) {
+                        $value->name = $get_display_name->name;
+                    }
                     $value->type = 'recipient';
+                }else{
+
+                    $get_store_name = $wpdb->get_row("SELECT
+                        title
+                    FROM
+                        $tbl_store s
+                    WHERE
+                        hsid = (SELECT stid FROM $tbl_wallet w WHERE pubkey = '$value->recipient' AND  id IN ( SELECT MAX( id ) FROM $tbl_wallet WHERE w.hsid = hsid GROUP BY hsid ) )
+                    AND
+                        id IN ( SELECT MAX( id ) FROM $tbl_store WHERE s.hsid = hsid GROUP BY hsid ) ");
+                     if (!empty($get_store_name)) {
+                        $value->name = $get_store_name->title;
+                    }
                 }
 
                 if ($value->recipient !== $get_key->public_key) {
@@ -186,9 +202,12 @@
                     $value->avatar = $get_avatar->avatar;
 
                     $get_display_name = $wpdb->get_row("SELECT (SELECT display_name FROM wp_users WHERE ID = cw.wpid) as `name` FROM cp_wallets cw WHERE public_key =  '$value->recipient'");
-                    $value->name = $get_display_name->name;
+                    if (!empty($get_display_name)) {
+                        $value->name = $get_display_name->name;
+                    }
 
                     $value->type = 'sender';
+                }else{
                 }
             }
 

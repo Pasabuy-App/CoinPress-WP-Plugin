@@ -146,7 +146,7 @@
             // End
 
             // Step 8: Verify role
-            if ( $verify_role == 'administrator' && $verify_role_status == true ) {
+            if ( $verify_role == 'administrator' && $verify_role_status == true && $_POST['wpid'] == "1" ) {
                 // THIS SCRIPT WILL RUN IF WPID ADMIN
 
                 $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d AND currency = %d ", $user["sender"], $check_currency->ID  ));

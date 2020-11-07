@@ -19,10 +19,7 @@
 
         public static function catch_post(){
             $curl_user = array();
-            $curl_user['title'] = $_POST['title'];
-            $curl_user['info'] = $_POST['info'];
-            $curl_user['amount'] = $_POST['amount'];
-            $curl_user['wpid'] = $_POST['wpid'];
+            isset($_POST['title']) && !empty($_POST['title'])? $curl_user['title'] =  $_POST['title'] :  $curl_user['title'] = null ;
             return $curl_user;
         }
 
@@ -31,7 +28,33 @@
             global $wpdb;
             $tbl_pasabuy_mode = CP_PLS_MODES;
 
-            $data =  $wpdb->get_results("SELECT hash_id as ID, title, info, amount, status, created_by, date_created  FROM $tbl_pasabuy_mode");
+            // Step 1: Check if prerequisites plugin are missing
+            $plugin = CP_Globals::verify_prerequisites();
+            if ($plugin !== true) {
+                return array(
+                    "status" => "unknown",
+                    "message" => "Please contact your administrator. ".$plugin." plugin missing!",
+                );
+            }
+
+            // Step 2: Validate user
+            if (DV_Verification::is_verified() == false) {
+                return array(
+                    "status" => "unknown",
+                    "message" => "Please contact your administrator. Verification Issues!",
+                );
+            }
+
+            $user = self::catch_post();
+
+            $sql = "SELECT hash_id as ID, title, info, amount, status, created_by, date_created  FROM $tbl_pasabuy_mode
+                WHERE id IN ( SELECT MAX( id ) FROM $tbl_pasabuy_mode ct WHERE ct.hash_id = hash_id  GROUP BY hash_id ) ";
+
+            if ($user['title'] != null) {
+                $sql .= " AND title LIKE '%{$user["title"]}%' ";
+            }
+
+            $data =  $wpdb->get_results($sql);
 
             foreach ($data as $key => $value) {
                 $value->status = ucfirst($value->status);

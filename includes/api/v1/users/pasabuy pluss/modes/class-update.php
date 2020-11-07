@@ -9,7 +9,7 @@
      * @version 0.1.0
      * Here is where you add hook to WP to create our custom database if not found.
 	*/
-	class CP_Pasabuy_Pluss_Modes_Insert {
+	class CP_Pasabuy_Pluss_Modes_Update {
 
         public static function listen(){
             return rest_ensure_response(
@@ -19,10 +19,8 @@
 
         public static function catch_post(){
             $curl_user = array();
-            $curl_user['title'] = $_POST['title'];
-            $curl_user['info'] = $_POST['info'];
-            $curl_user['amount'] = serialize(array( 'amount' => $_POST['amount']));
             $curl_user['wpid'] = $_POST['wpid'];
+            $curl_user['psl_mode_id'] = $_POST['psl_mode_id'];
             return $curl_user;
         }
 
@@ -49,7 +47,7 @@
                 );
             }
 
-            if ( !isset($_POST['title']) || !isset($_POST['info']) || !isset($_POST['amount']) ) {
+            if ( !isset($_POST['psl_mode_id']) ) {
                 return array(
                     "status" => "unknown",
                     "message" => "Please contact your administrator. Request unknown"
@@ -67,20 +65,24 @@
             }
             $wpdb->query("START TRANSACTION");
             // Verify if mode is existed
-                $check_mode = $wpdb->get_row("SELECT title FROM $tbl_pasabuy_pluss_mode WHERE title LIKE '%{$user["title"]}%' AND `status` = 'active' AND id IN ( SELECT MAX( id ) FROM $tbl_pasabuy_mode ct WHERE ct.hash_id = hash_id  GROUP BY hash_id )  ");
-                if(!empty($check_mode)){
+                $get_mode = $wpdb->get_row("SELECT * FROM $tbl_pasabuy_pluss_mode WHERE hash_id = '{$user["psl_mode_id"]}' AND `status` = 'active' AND id IN ( SELECT MAX( id ) FROM $tbl_pasabuy_pluss_mode ct WHERE ct.hash_id = hash_id  GROUP BY hash_id )  ");
+                if(empty($get_mode)){
                     return array(
                         "status" => "failed",
-                        "message" => "This Pasabuy Pluss mode is already exists. $check_mode->title "
+                        "message" => "This Pasabuy Pluss mode does not exists."
                     );
                 }
             // End
 
+            isset($_POST['title']) && !empty($_POST['title'])? $user['title'] =  $_POST['title'] :  $user['title'] = $get_mode->title ;
+            isset($_POST['info']) && !empty($_POST['info'])? $user['info'] =  $_POST['info'] :  $user['info'] = $get_mode->info ;
+            isset($_POST['amount']) && !empty($_POST['amount'])? $user['amount'] = serialize( array( 'amount' => $_POST['amount'] ) ) : $user['amount'] = $get_mode->amount ;
+
             $import = $wpdb->query("INSERT INTO
                 $tbl_pasabuy_pluss_mode
-                    ($tbl_pasabuy_pluss_mode_fields)
+                    (`hash_id`, $tbl_pasabuy_pluss_mode_fields, `status`)
                 VALUES
-                    ( '{$user["title"]}', '{$user["info"]}', '{$user["amount"]}', '{$user["wpid"]}' ) ");
+                    ('$get_mode->hash_id', '{$user["title"]}', '{$user["info"]}', '{$user["amount"]}', '{$user["wpid"]}', '$get_mode->status' ) ");
 
             $import_id = $wpdb->insert_id;
 

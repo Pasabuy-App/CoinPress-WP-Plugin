@@ -20,11 +20,7 @@
         public static function catch_post(){
             $curl_user = array();
 
-            $curl_user['stid'] = $_POST['stid'];
-            $curl_user['modes'] = $_POST['modes'];
             isset($_POST['trid']) && !empty($_POST['trid'])? $curl_user['store_id'] =  $_POST['trid'] :  $curl_user['store_id'] = null ;
-            $curl_user['odid'] = $_POST['odid'];
-            $curl_user['wpid'] = $_POST['wpid'];
 
             return $curl_user;
         }
@@ -35,6 +31,17 @@
 
             $tbl_pasabuy_pluss_transaction = CP_PLS_TRANSACTIONS;
             $tbl_pasabuy_pluss_transaction_fileds = CP_PLS_TRANSACTIONS_FIELDS;
+
+            $sql = "SELECT
+                    *
+                FROM
+                    $tbl_pasabuy_pluss_transaction ";
+
+            if ($user["stid"] != null) {
+                $sql .= " AND stid = '{$user["stid"]}' ";
+            }
+
+            $data = $wpdb->get_results();
 
 
 

@@ -25,11 +25,13 @@
     require plugin_dir_path(__FILE__) . '/v1/users/wallet/class-select-wallet.php'; // Example
 
     // Psasabuy pluss
-        require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/class-transactions.php'; // Example
+        // require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/class-transactions.php'; // Example
 
         // Modes
             require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/modes/class-insert.php'; // Example
             require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/modes/class-listing.php'; // Example
+            require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/modes/class-delete.php'; // Example
+            require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/modes/class-update.php'; // Example
 
 
     // global
@@ -87,6 +89,16 @@
             register_rest_route( 'coinpress/v1/user/pls/mode', 'list', array(
                 'methods' => 'POST',
                 'callback' => array('CP_Pasabuy_Pluss_Modes_Listing','listen'),
+            ));
+
+            register_rest_route( 'coinpress/v1/user/pls/mode', 'delete', array(
+                'methods' => 'POST',
+                'callback' => array('CP_Pasabuy_Pluss_Modes_Delete','listen'),
+            ));
+
+            register_rest_route( 'coinpress/v1/user/pls/mode', 'update', array(
+                'methods' => 'POST',
+                'callback' => array('CP_Pasabuy_Pluss_Modes_Update','listen'),
             ));
     }
     add_action( 'rest_api_init', 'coinpress_route' );
