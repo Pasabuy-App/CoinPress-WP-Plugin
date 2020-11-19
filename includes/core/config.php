@@ -31,4 +31,4 @@
 	define('CP_PLS_TRANSACTIONS_FIELDS', '`wpid`, `stid`, `modes`, `tid`, `odid`, `created_by`');
 
 	define('CP_PLS_MODES', CP_PREFIX.'pls_modes');
-	define('CP_PLS_MODES_FIELDS', '`title`, `info`, `amount`, `created_by`');
+	define('CP_PLS_MODES_FIELDS', '`title`, `info`, `amount`, `action`, `limit`, `trigger`, `created_by`');

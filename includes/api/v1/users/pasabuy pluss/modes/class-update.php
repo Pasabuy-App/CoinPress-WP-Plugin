@@ -86,8 +86,6 @@
 
             $import_id = $wpdb->insert_id;
 
-            $hsid = CP_Globals::generating_pubkey($import_id, $tbl_pasabuy_pluss_mode, 'hash_id');
-
             if ($import < 1) {
                 $wpdb->query("ROLLBACK");
                 return array(

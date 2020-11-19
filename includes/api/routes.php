@@ -32,6 +32,7 @@
             require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/modes/class-listing.php'; // Example
             require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/modes/class-delete.php'; // Example
             require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/modes/class-update.php'; // Example
+            require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/class-verify.php'; // Example
 
 
     // global
@@ -81,6 +82,12 @@
         /*
          *  PASABUY PLUSS RESTAPI
         */
+
+            register_rest_route( 'coinpress/v1/user/pls/mode', 'verify', array(
+                'methods' => 'POST',
+                'callback' => array('CP_Pasabuy_Pluss_Verify','listen'),
+            ));
+
             register_rest_route( 'coinpress/v1/user/pls/mode', 'insert', array(
                 'methods' => 'POST',
                 'callback' => array('CP_Pasabuy_Pluss_Modes_Insert','listen'),

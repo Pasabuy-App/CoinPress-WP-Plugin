@@ -10,6 +10,39 @@
      * Here is where you add hook to WP to create our custom database if not found.
 	*/
 
+
+	function generating_pubkey($primary_key, $table_name, $column_name, $get_key, $lenght){
+		global $wpdb;
+
+		$sql = "UPDATE  $table_name SET $column_name = concat(
+			substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand($primary_key)*4294967296))*36+1, 1), ";
+
+		for ($i=0; $i < $lenght ; $i++) {
+			$sql .= "substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed:=round(rand(@seed)*4294967296))*36+1, 1),";
+		}
+
+		$sql .=" substring('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', rand(@seed)*36+1, 1)
+			)
+			WHERE ID = $primary_key;";
+
+
+		$results = $wpdb->query($sql);
+
+		if ($get_key = true) {
+			$key  = $wpdb->get_row("SELECT `$column_name` as `key` FROM $table_name WHERE ID = '$primary_key' ");
+			return $key->key;
+		}
+
+		if ($results < 1) {
+			return false;
+		}else{
+			if ($results == 1) {
+				return true;
+			}
+		}
+	}
+
+
 	function cp_dbhook_activate(){
 
 		//Initializing wordpress global variable
@@ -43,6 +76,7 @@
 
 			$wpdb->query(" INSERT INTO $tbl_confg  (ID, hash_id, title, info, config_key, config_value) VALUES (1, sha2('1', 256), 'Maximum ammount of money transaction', 'This config is the maximum ammount that user can send money to other user', 'maximum_ammount', '1' );");
 			$wpdb->query(" INSERT INTO $tbl_confg  (ID, hash_id, title, info, config_key, config_value) VALUES (2, sha2('2', 256), 'Minimum ammount of money transaction', 'This config is the minimmum ammount that user can send money to other user', 'minimum_ammount', '2' );");
+			$wpdb->query(" INSERT INTO $tbl_confg  (ID, hash_id, title, info, config_key, config_value) VALUES (3, sha2('3', 256), 'Pasabuy pluss maximum transaction', 'This config is the maximum used of pasabuy pluss feature', 'pls_maximum', '3' );");
 		}
 
 		//Database table creation for wallet
@@ -60,6 +94,18 @@
 			$wpdb->query("CREATE INDEX `hash_id` ON $tbl_wallet (`hash_id`);");
 			$wpdb->query("CREATE INDEX `currency` ON $tbl_wallet (`currency`);");
 			$wpdb->query("CREATE INDEX `public_key` ON $tbl_wallet (`public_key`);");
+
+			// Import dbhook of admin wallet currency savings
+				$import_wallet_savings = $wpdb->query(" INSERT INTO $tbl_wallet  (ID, hash_id, wpid, currency) VALUES (1, SHA2( '1' , 256), '1', '1' );");
+				$import_wallet_savings_id = $wpdb->insert_id;
+				$import_wallet_savings_hsid = generating_pubkey($import_wallet_savings_id, $tbl_wallet, 'public_key', false, 9 );
+			// End
+
+			// Import dbhook of admin wallet currency pasabuy pluss
+				$import_wallet_pasabuy_pluss = $wpdb->query(" INSERT INTO $tbl_wallet  (ID, hash_id, wpid, currency) VALUES (2, SHA2( '2' , 256), '1', '2' );");
+				$import_wallet_pasabuy_pluss_id = $wpdb->insert_id;
+				$import_wallet_pasabuy_pluss_hsid = generating_pubkey($import_wallet_pasabuy_pluss_id, $tbl_wallet, 'public_key', false, 9 );
+			// End
 
 		}
 
@@ -109,8 +155,15 @@
 			$wpdb->query("CREATE INDEX `hash_id` ON $tbl_currencies (`hash_id`);");
 			$wpdb->query("CREATE INDEX `status` ON $tbl_currencies (`status`);");
 
-			$wpdb->query(" INSERT INTO $tbl_currencies  (ID, hash_id, title, info, abbrev, exchange, created_by) VALUES (1, SHA2( '1' , 256), 'Control', 'Origin', 'CTR', '1', '1' );");
-			$wpdb->query(" INSERT INTO $tbl_currencies  (ID, hash_id, title, info, abbrev, exchange, created_by) VALUES (1, SHA2( '2' , 256), 'Pasabuy Pluss', 'Premium currency', 'PLS', '1', '1' );");
+			$wpdb->query(" INSERT INTO
+				$tbl_currencies
+					(ID, hash_id, title, info, abbrev, exchange, created_by)
+				VALUES
+					(1, SHA2( '1' , 256), 'Control', 'Origin', 'CTR', '1', '1' ),
+					(2, SHA2( '2' , 256), 'Pasabuy Pluss', 'Premium currency', 'PLS', '1', '1' ),
+					(2, SHA2( '2' , 256), 'Savings', 'Savings Currencies', 'SVS', '1', '1' ),
+					(2, SHA2( '2' , 256), 'Credits', 'Credits Wallet', 'CDT', '1', '1' );");
+			$wpdb->query(" INSERT INTO $tbl_currencies  (ID, hash_id, title, info, abbrev, exchange, created_by) VALUES ;");
 		}
 
 		//Database table creation for revisions
@@ -133,7 +186,8 @@
 			$wpdb->query("CREATE INDEX child_key ON $tbl_revs (child_key);");
 
 			$wpdb->query(" INSERT INTO $tbl_revs  (ID, hash_id, revs_type, parent_id, child_key, child_val, created_by) VALUES (ID, sha2(1, 256), 'configs', '1', 'maximum_ammount', '10000', '1' );");
-			$wpdb->query(" INSERT INTO $tbl_revs  (ID, hash_id, revs_type, parent_id, child_key, child_val, created_by) VALUES (ID, sha2(2, 256), 'configs', '2', 'minimum_ammount', '25000', '2' );");
+			$wpdb->query(" INSERT INTO $tbl_revs  (ID, hash_id, revs_type, parent_id, child_key, child_val, created_by) VALUES (ID, sha2(2, 256), 'configs', '2', 'minimum_ammount', '25000', '1' );");
+			$wpdb->query(" INSERT INTO $tbl_revs  (ID, hash_id, revs_type, parent_id, child_key, child_val, created_by) VALUES (ID, sha2(3, 256), 'configs', '3', 'pls_maximum', '3', '1' );");
 		}
 
 		//Database table creation for revisions
@@ -162,14 +216,18 @@
 		//Database table creation for revisions
 		if($wpdb->get_var( "SHOW TABLES LIKE '$tbl_pasabuy_pluss_modes'" ) != $tbl_pasabuy_pluss_modes) {
 			$sql = "CREATE TABLE `".$tbl_pasabuy_pluss_modes."` (";
-				$sql .= "`ID` bigint(20) NOT NULL AUTO_INCREMENT, ";
-				$sql .= "`hash_id` varchar(255) NOT NULL COMMENT 'Config Description', ";
-				$sql .= "`title` varchar(100) NOT NULL COMMENT 'Title of this mode.', ";
-				$sql .= "`info` varchar(150) NOT NULL DEFAULT 0 COMMENT 'Info of this mode.', ";
-				$sql .= "`amount` varchar(150) NOT NULL COMMENT 'Amount of this store.', ";
-				$sql .= "`status` enum('active', 'inactive') NOT NULL COMMENT 'Status of this pasabuy pluss mode.', ";
-				$sql .= "`created_by` bigint(20) NOT NULL DEFAULT 0 COMMENT 'User ID created this mode.', ";
-				$sql .= "`date_created` datetime DEFAULT current_timestamp() COMMENT 'The date this mode is created.', ";
+				$sql .= " `ID` 		     bigint(20) NOT NULL AUTO_INCREMENT, ";
+				$sql .= " `hash_id` 	 varchar(255) NOT NULL COMMENT 'Config Description', ";
+				$sql .= " `title` 	 	 varchar(100) NOT NULL COMMENT 'Title of this mode.', ";
+				$sql .= " `info` 		 varchar(150) DEFAULT 0 COMMENT 'Info of this mode.', ";
+				$sql .= " `amount` 		 varchar(150) NOT NULL COMMENT 'Amount of this store.', ";
+				$sql .= " `action` 		 enum('free_ship','discount','min_spend','less') , ";
+				$sql .= " `limit` 		 int(20) NOT NULL COMMENT 'Limit ussage of this pls mode.', ";
+				$sql .= " `trigger` 	 tinyint(4) NOT NULL COMMENT 'Trigger of this pls mode.', ";
+				$sql .= " `status` 	     enum('active', 'inactive') NOT NULL COMMENT 'Status of this pasabuy pluss mode.', ";
+				$sql .= " `created_by` 	 bigint(20) NOT NULL DEFAULT 0 COMMENT 'User ID created this mode.', ";
+				$sql .= " `date_created` datetime DEFAULT current_timestamp() COMMENT 'The date this mode is created.', ";
+				$sql .= "UNIQUE( `trigger` ), ";
 				$sql .= "PRIMARY KEY (`ID`) ";
 				$sql .= ") ENGINE = InnoDB; ";
 			$result = $wpdb->get_results($sql);

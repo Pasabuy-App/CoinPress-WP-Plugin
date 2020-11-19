@@ -20,7 +20,8 @@
         public static function catch_post(){
             $curl_user = array();
             $curl_user['title'] = $_POST['title'];
-            $curl_user['info'] = $_POST['info'];
+            $curl_user['action'] = $_POST['action'];
+            $curl_user['limit'] = $_POST['limit'];
             $curl_user['amount'] = serialize(array( 'amount' => $_POST['amount']));
             $curl_user['wpid'] = $_POST['wpid'];
             return $curl_user;
@@ -49,7 +50,7 @@
                 );
             }
 
-            if ( !isset($_POST['title']) || !isset($_POST['info']) || !isset($_POST['amount']) ) {
+            if ( !isset($_POST['title']) || !isset($_POST['amount']) || !isset($_POST['action']) || !isset($_POST['limit']) ) {
                 return array(
                     "status" => "unknown",
                     "message" => "Please contact your administrator. Request unknown"
@@ -65,9 +66,28 @@
                     "message" => "Required fileds cannot be empty "."'".ucfirst($validate)."'"."."
                 );
             }
+
+            isset($_POST['info']) && !empty($_POST['info'])? $user['info'] =  $_POST['info'] :  $user['info'] = null ;
+
+            if ($user["action"] != "free_ship" && $user["action"] != "discount" && $user["action"] != "min_spend"  && $user["action"] != "less" )  {
+                return array(
+                    "status" => "failed",
+                    "message" => "Invalid value of action."
+                );
+            }
+
+            // get data
+                $check_modes = $wpdb->get_row("SELECT MAX(`trigger`) as `trigger` FROM $tbl_pasabuy_pluss_mode  ");
+                if (!empty($check_modes)) {
+                    $trigger = $check_modes->trigger + 1;
+                }else{
+                    $trigger = 1;
+                }
+            // End
+
             $wpdb->query("START TRANSACTION");
             // Verify if mode is existed
-                $check_mode = $wpdb->get_row("SELECT title FROM $tbl_pasabuy_pluss_mode WHERE title LIKE '%{$user["title"]}%' AND `status` = 'active' AND id IN ( SELECT MAX( id ) FROM $tbl_pasabuy_mode ct WHERE ct.hash_id = hash_id  GROUP BY hash_id )  ");
+                $check_mode = $wpdb->get_row("SELECT title FROM $tbl_pasabuy_pluss_mode WHERE title LIKE '%{$user["title"]}%' AND `status` = 'active' AND id IN ( SELECT MAX( id ) FROM $tbl_pasabuy_pluss_mode ct WHERE ct.hash_id = hash_id  GROUP BY hash_id )  ");
                 if(!empty($check_mode)){
                     return array(
                         "status" => "failed",
@@ -80,8 +100,7 @@
                 $tbl_pasabuy_pluss_mode
                     ($tbl_pasabuy_pluss_mode_fields)
                 VALUES
-                    ( '{$user["title"]}', '{$user["info"]}', '{$user["amount"]}', '{$user["wpid"]}' ) ");
-
+                    ( '{$user["title"]}', '{$user["info"]}', '{$user["amount"]}', '{$user["action"]}',  '{$user["limit"]}', '$trigger', '{$user["wpid"]}' ) ");
             $import_id = $wpdb->insert_id;
 
             $hsid = CP_Globals::generating_pubkey($import_id, $tbl_pasabuy_pluss_mode, 'hash_id');
