@@ -11,6 +11,12 @@
 	*/
 	class CP_Pasabuy_Pluss_Verify {
 
+        public static function listen(){
+            return rest_ensure_response(
+                self::verify_pls_store()
+            );
+        }
+
         public static function catch_post(){
             $curl_user = array();
             $curl_user['wpid'] = $_POST['wpid'];
