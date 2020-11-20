@@ -98,7 +98,7 @@
 
             return array(
                 "status" => "success",
-                "data" => $smp
+                "data" => array($smp)
             );
         }
     }
