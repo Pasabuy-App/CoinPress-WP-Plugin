@@ -55,10 +55,15 @@
             // Get user wallet
                 $wallet = $wpdb->get_row("SELECT * FROM $tbl_wallet WHERE wpid = '{$user["wpid"]}' AND  currency = '$currency->ID'   ");
                 if (empty($wallet)) {
-                    return array(
-                        "status" => "failed",
-                        "message" => "You must have wallet first."
-                    );
+
+                    $user_wallet = $wpdb->query(" INSERT INTO $tbl_wallet ( wpid, currency) VALUES ( '{$user["wpid"]}', '$currency->ID' )  ");
+                    $wallet_id = $wpdb->insert_id;
+
+                    $public_key = CP_Globals::update_public_key_hash($wallet_id, $tbl_wallet);
+                    $update_hash_id = $wpdb->query("UPDATE $tbl_wallet SET hash_id = SHA2( '$wallet_id' , 256)  WHERE ID = '$wallet_id'  ");
+
+                    $wallet = $wpdb->get_row("SELECT * FROM $tbl_wallet WHERE ID = '$wallet_id'");
+
                 }
             // End
 
@@ -78,14 +83,13 @@
                         unset($get_mode[$key]);
                         continue;
                     }else {
+                        $value->amount = unserialize($value->amount)["amount"];
+
                         $smp = $value;
                     }
                 }
             }
 
-            foreach ($smp as $key => $value) {
-                $value->amount = unserialize($value->amount)["amount"];
-            }
             return array(
                 "status" => "success",
                 "data" => $smp
