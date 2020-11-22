@@ -34,6 +34,8 @@
             require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/modes/class-update.php'; // Example
             require plugin_dir_path(__FILE__) . '/v1/users/pasabuy pluss/class-verify.php'; // Example
 
+    // transaction
+    require plugin_dir_path(__FILE__) . '/v1/users/transactions/class-transactions.php'; // Example
 
     // global
     require plugin_dir_path(__FILE__) . '/v1/class-globals.php'; // Example
@@ -107,6 +109,7 @@
                 'methods' => 'POST',
                 'callback' => array('CP_Pasabuy_Pluss_Modes_Update','listen'),
             ));
+
     }
     add_action( 'rest_api_init', 'coinpress_route' );
 

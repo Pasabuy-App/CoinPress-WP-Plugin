@@ -152,10 +152,15 @@
                 $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d AND currency = %d ", $user["sender"], $check_currency->ID  ));
 
                 if (!$get_id_sender  ) {
-                    return array(
-                        "status" => "failed",
-                        "message" => "You must have wallet first.",
-                    );
+                    $user_wallet = $wpdb->query(" INSERT INTO cp_wallets ( wpid, currency) VALUES ( '{$_POST["wpid"]}', '$check_currency->ID' )  ");
+                    $wallet_id = $wpdb->insert_id;
+
+                    $public_key = CP_Globals::update_public_key_hash($wallet_id, 'cp_wallets');
+
+                    $update_hash_id = $wpdb->query("UPDATE cp_wallets SET hash_id = SHA2( '$wallet_id' , 256)  WHERE ID =  $wallet_id  ");
+
+                    $get_id_sender = $wpdb->get_row($wpdb->prepare( " SELECT public_key FROM cp_wallets WHERE wpid = %d AND currency = %d ", $_POST["wpid"], $check_currency->ID  ));
+
                 }
 
                 // // Step 9: SELECTING PUBLIC KEY OF USER AND RECIPIENT
